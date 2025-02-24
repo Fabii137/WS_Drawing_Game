@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="ws.js"></script>
+    <title>Drawing Game</title>
+</head>
+<body>
+    <h1 id="status"></h1>
+    <h2 id="word"></h2>
+    <h3 id="drawer"></h3>
+    <div class="container">
+        <div class="canvas">
+            <canvas id="canvas"></canvas>
+            <div class="options">
+                <button onclick="setColor('black')" style="background-color: black;"></button>
+                <button onclick="setColor('green')" style="background-color: green;"></button>
+                <button onclick="setColor('blue')" style="background-color: blue;"></button>
+                <button onclick="setColor('orange')" style="background-color: orange;"></button>
+                <button onclick="setColor('brown')" style="background-color: brown;"></button>
+                <button onclick="setColor('red')" style="background-color: red;"></button>
+                <button onclick="setColor('white')" style="background-color: white;"></button>
+                <button class="clear" onclick="clearCanvas()" style="background-color: white;">🗑️</button>
+            </div>
+        </div>
+        
+        <div class="chat">
+            <p>Chat</p>
+        </div>
+    </div>
+    
+</body>
+<script src="game.js"></script>
+</html>

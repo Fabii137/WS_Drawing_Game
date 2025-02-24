@@ -3,7 +3,7 @@ body{
     overflow: hidden;
 }
 
-.word, .drawer {
+#status, #word, #drawer {
     text-align: center;
 }
 

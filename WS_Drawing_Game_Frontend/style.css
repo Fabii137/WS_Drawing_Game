@@ -1,0 +1,23 @@
+body{
+    height: 100%;
+    overflow: hidden;
+}
+
+.word {
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    height: 100%;
+    margin: 2em;
+    gap: 6em;
+    #canvas {
+        border: 1px solid black;
+    }
+    .chat {
+        border: 1px solid black;
+        width: 50%;
+    }
+}
+

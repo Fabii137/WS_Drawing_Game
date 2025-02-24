@@ -1,4 +1,4 @@
-package org.example;
+package org.DrawingGame;
 
 import com.google.gson.Gson;
 import org.java_websocket.WebSocket;
@@ -12,10 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 public class GameServer extends WebSocketServer {
-    private int port;
+    private final int MAX_SIZE = 2;
+    private final int port;
     private final List<GameSession> gameSessions = new ArrayList<>();
     private final Map<WebSocket, GameSession> playerToGameSession = new HashMap<>();
-    private final int maxSize = 2;
+
     private final Gson gson = new Gson();
 
     public GameServer(int port) {
@@ -38,34 +39,40 @@ public class GameServer extends WebSocketServer {
 
         GameSession availableSession = null;
         for(GameSession session : gameSessions) {
-            if(session.getGameSize() < maxSize) {
+            if(session.getGameSize() <= MAX_SIZE) {
                 availableSession = session;
             }
         }
 
         if(availableSession == null) {
-            GameSession newSession = new GameSession();
-            availableSession = newSession;
+            System.out.println("new session");
+            availableSession = new GameSession();
+            gameSessions.add(availableSession);
         }
 
         Player newPlayer = new Player(webSocket, username);
         availableSession.addPlayer(newPlayer);
         playerToGameSession.put(player.getWebSocket(), availableSession);
-
-        newPlayer.getWebSocket().send(gson.toJson(Map.of("type", "wait")));
+        if(availableSession.getGameSize() < 2) {
+            newPlayer.getWebSocket().send(gson.toJson(Map.of("type", "wait")));
+        }
     }
 
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
         System.out.println("Player disconnected: " + webSocket.getRemoteSocketAddress());
-        playerToGameSession.remove(webSocket);
+        if(playerToGameSession.containsKey(webSocket)) {
+            GameSession session = playerToGameSession.get(webSocket);
+            session.deletePlayer(webSocket);
+            playerToGameSession.remove(webSocket);
+        }
     }
 
     @Override
     public void onMessage(WebSocket webSocket, String s) {
         GameSession game = playerToGameSession.get(webSocket);
         if(game != null) {
-            game.handleMessage(s);
+            game.handleMessage(webSocket, s);
         }
     }
 

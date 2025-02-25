@@ -31,15 +31,12 @@ public class GameSession {
 
     }
 
-    //TODO: tab switches still clear canvas!!!!
-
-
-
     public void addPlayer(Player player) {
         players.add(player);
 
         if(players.size() > 1) {
             turn = players.getFirst();
+            playerIdx = 1;
             word = words.get(rand.nextInt(words.size()));
             broadcast(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
             turn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
@@ -62,11 +59,7 @@ public class GameSession {
         if(playerToRemove == turn) {
             broadcast(gson.toJson(Map.of("type", "clear")));
             if(players.size() >= 2) {
-                playerIdx = (playerIdx + 1) % players.size();
-                turn = players.get(playerIdx);
-                word = words.get(rand.nextInt(words.size()));
-                broadcast(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
-                broadcast(gson.toJson(Map.of("type", "word", "data", word)));
+                nextTurn();
             } else {
                 broadcast(gson.toJson(Map.of("type", "wait")));
             }
@@ -81,21 +74,53 @@ public class GameSession {
 
     public void handleMessage(WebSocket ws, String message) {
         JsonObject jsonMessage = JsonParser.parseString(message).getAsJsonObject();
-        if(jsonMessage.has("type") && "canvas".equals(jsonMessage.get("type").getAsString())) {
+        if(!jsonMessage.has("type"))
+            return;
+
+        String type = jsonMessage.get("type").getAsString();
+        System.out.println(type);
+        if("canvas".equals(type)) {
             if(getPlayerFromWebSocket(ws) == turn) {
                 String imgData = jsonMessage.get("data").getAsString();
                 lastCanvasState = imgData;
                 broadcast(gson.toJson(Map.of("type", "canvas", "data", imgData)));
             }
         }
-        if(jsonMessage.has("type") && "get_canvas".equals(jsonMessage.get("type").getAsString())) {
-            ws.send(gson.toJson(Map.of("type", "canvas", "data", lastCanvasState)));
+        if("get_canvas".equals(type)) {
+            if(lastCanvasState != null) {
+                ws.send(gson.toJson(Map.of("type", "canvas", "data", lastCanvasState)));
+            }
+        }
+
+        if("message".equals(type)) {
+            if(jsonMessage.has("data")) {
+                Player author = getPlayerFromWebSocket(ws);
+                String msg = jsonMessage.get("data").getAsString();
+
+                if(msg.equals(word)) {
+                    author.setDone(true);
+                    broadcast(gson.toJson(Map.of("type", "correct", "username", author.getUsername())));
+
+                    if(checkDone()) {
+                        nextTurn();
+                    }
+                } else {
+                    broadcastBut(author, gson.toJson(Map.of("type", "message", "data", msg, "username", author.getUsername())));
+                }
+            }
         }
     }
 
     private void broadcast(String message) {
         for(Player p : players) {
             p.getWebSocket().send(message);
+        }
+    }
+
+    private void broadcastBut(Player player, String message) {
+        for(Player p : players) {
+            if(p != player)
+                p.getWebSocket().send(message);
         }
     }
 
@@ -116,5 +141,26 @@ public class GameSession {
             }
         }
         return player;
+    }
+
+    private boolean checkDone() {
+        for(Player p : players) {
+            if(p != turn && !p.isDone()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void nextTurn() {
+        for(Player p : players) {
+           p.setDone(false);
+        }
+
+        playerIdx = (playerIdx + 1) % players.size();
+        turn = players.get(playerIdx);
+        word = words.get(rand.nextInt(words.size()));
+        broadcast(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
+        turn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
     }
 }

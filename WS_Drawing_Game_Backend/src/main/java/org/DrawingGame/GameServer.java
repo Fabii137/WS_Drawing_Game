@@ -45,7 +45,6 @@ public class GameServer extends WebSocketServer {
         }
 
         if(availableSession == null) {
-            System.out.println("new session");
             availableSession = new GameSession();
             gameSessions.add(availableSession);
         }

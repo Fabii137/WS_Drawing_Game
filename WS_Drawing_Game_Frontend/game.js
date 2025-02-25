@@ -5,9 +5,9 @@ if(!username || username === "") {
 
 window.addEventListener('load', () => { 
 	resize();
-	document.addEventListener('mousedown', startPainting); 
-	document.addEventListener('mouseup', stopPainting); 
-	document.addEventListener('mousemove', sketch); 
+	document.addEventListener('mousedown', startDrawing); 
+	document.addEventListener('mouseup', stopDrawing); 
+	document.addEventListener('mousemove', draw); 
 	window.addEventListener('resize', resize); 
 
     // socket.send(JSON.stringify({ type: "get_canvas" }));
@@ -85,9 +85,12 @@ function resize(){
     ctx.canvas.width = window.innerWidth / 2; 
     ctx.canvas.height = window.innerHeight / 1.7; 
 
-    setTimeout(() => {
-        socket.send(JSON.stringify({ type: "get_canvas" }));
-    }, 100);
+    if(socket.readyState == WebSocket.OPEN) {
+        setTimeout(() => {
+            socket.send(JSON.stringify({ type: "get_canvas" }));
+        }, 100);
+    }
+    
 } 
 	
 let coord = {x:0 , y:0}; 
@@ -98,13 +101,13 @@ function getPosition(event){
     coord.x = event.clientX - canvas.offsetLeft; 
     coord.y = event.clientY - canvas.offsetTop; 
 } 
-function startPainting(event){ 
+function startDrawing(event){ 
     if(myTurn) {
         paint = true; 
         getPosition(event); 
     }
 } 
-function stopPainting(){ 
+function stopDrawing(){ 
     paint = false; 
 
     if(myTurn) {
@@ -127,7 +130,7 @@ function clearCanvas() {
     }
 }
 	
-function sketch(event){ 
+function draw(event){ 
     if (!paint) 
         return; 
 

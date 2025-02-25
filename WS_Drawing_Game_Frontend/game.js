@@ -10,19 +10,19 @@ window.addEventListener('load', () => {
 	document.addEventListener('mousemove', sketch); 
 	window.addEventListener('resize', resize); 
 
-    console.log("Page loaded. Requesting canvas...");
     socket.send(JSON.stringify({ type: "get_canvas" }));
 }); 
 
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
-        console.log("Requesting canvas after tab switch...");
         socket.send(JSON.stringify({ type: "get_canvas" }));
     }
 });
 
 myTurn = false;
 word = null;
+let originalCanvasWidth = 800;
+let originalCanvasHeight = 600; 
 
 const socket = new WebSocket(`ws://localhost:8080?username=${username}`);
 
@@ -41,12 +41,20 @@ socket.onmessage = (event) => {
             statusElement.innerText = 'Status: Waiting for players';
             break;
         case "start":
+            word = null;
+            document.getElementById("word").innerText = "";
             currentTurn = data.turn;
             myTurn = username === currentTurn;
             statusElement.innerText = (myTurn) ? 'Status: Your Turn!' : 'Status: Current Turn: ' + currentTurn;
+            addMessage("round starts!");
             break;
+        case "message":
+            addMessage(data.data, data.username)
+            break;
+        case "correct":
+            addMessage(data.username + ' guessed the word!');
         case "clear":
-            clearCanvas();
+            forceClear();
             break;
         case "word":
             word = data.data;
@@ -54,12 +62,6 @@ socket.onmessage = (event) => {
             break;
         case "canvas":
             updateCanvas(data.data);
-            break;
-        case "nextTurn":
-            word = null;
-            currentTurn = data.turn;
-            myTurn = username === currentTurn;
-            statusElement.innerText = (myTurn) ? 'Status: Your Turn!' : 'Status: Current Turn: ' + currentTurn;
             break;
     }
 };
@@ -76,7 +78,7 @@ function updateCanvas(imgData) {
     const img = new Image();
     img.onload = function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
     img.src = imgData;
 }
@@ -84,6 +86,10 @@ function updateCanvas(imgData) {
 function resize(){ 
     ctx.canvas.width = window.innerWidth / 2; 
     ctx.canvas.height = window.innerHeight / 1.7; 
+
+    setTimeout(() => {
+        socket.send(JSON.stringify({ type: "get_canvas" }));
+    }, 100);
 } 
 	
 let coord = {x:0 , y:0}; 
@@ -112,9 +118,15 @@ function setColor(setColor) {
     color = setColor;
 }
 
-function clearCanvas() {
+function forceClear() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    sendCanvasData();
+}
+
+function clearCanvas() {
+    if(myTurn) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        sendCanvasData();
+    }
 }
 	
 function sketch(event){ 
@@ -129,6 +141,38 @@ function sketch(event){
     getPosition(event); 
     ctx.lineTo(coord.x , coord.y); 
     ctx.stroke(); 
+}
+
+function sendMessage() {
+    let input = document.getElementById("messageInput");
+    let text = input.value.trim();
+    if (text === "") 
+        return;
+
+    addMessage(text, "You");
+    input.value = "";
+
+    socket.send(JSON.stringify({ type: "message", data: text, username: username }));
+}
+
+function addMessage(message, name) {
+    let chat = document.getElementById("chat");
+    
+    let messageDiv = document.createElement("div");
+    messageDiv.classList.add("message", "user");
+
+    let messageText = document.createElement("div");
+    messageText.classList.add("text");
+    messageText.textContent = message;
+
+    let sender = document.createElement("span");
+    sender.textContent = name;
+
+    messageDiv.appendChild(messageText);
+    messageDiv.appendChild(sender);
+    chat.appendChild(messageDiv);
+    
+    chat.scrollTop = chat.scrollHeight;
 }
 
 

@@ -24,10 +24,14 @@
             </div>
         </div>
         
-        <div class="chat">
-            <p>Chat</p>
+        <div class="chat-container">
+            <div class="chat" id="chat">
+            </div>
+            <div class="input-container">
+                <input type="text" id="messageInput" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
         </div>
-    </div>
     
 </body>
 <script src="game.js"></script>

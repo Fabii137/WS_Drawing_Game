@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GameServer extends WebSocketServer {
-    private final int MAX_SIZE = 2;
+    private final int MAX_SIZE = 3;
     private final int port;
     private final List<GameSession> gameSessions = new ArrayList<>();
     private final Map<WebSocket, GameSession> playerToGameSession = new HashMap<>();
@@ -41,7 +41,7 @@ public class GameServer extends WebSocketServer {
         //TODO: find a solution for multiple name problem + (maybe)create lobby
         GameSession availableSession = null;
         for(GameSession session : gameSessions) {
-            if(session.getGameSize() <= MAX_SIZE && !session.doesNameExist(username)) {
+            if(session.getGameSize() < MAX_SIZE && !session.doesNameExist(username)) {
                 availableSession = session;
             }
         }

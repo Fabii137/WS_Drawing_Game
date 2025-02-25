@@ -10,21 +10,23 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 public class GameSession {
-    private Gson gson;
+    private final Gson gson;
     Random rand = new Random();
-    private List<Player> players;
+    private final List<Player> players;
     private String word = null;
     private Player turn;
     private int playerIdx = 0;
     private String lastCanvasState = null;
-    private List<String> words;
+    private final List<String> words;
+    private boolean isRunning;
 
     public GameSession() {
         words = new ArrayList<>();
         gson = new Gson();
         players = new ArrayList<>();
+        isRunning = false;
         try {
-            readWordsFile("words.txt");
+            readWordsFile();
         } catch (FileNotFoundException e) {
             System.out.println("File not found");
         }
@@ -35,11 +37,16 @@ public class GameSession {
         players.add(player);
 
         if(players.size() > 1) {
-            turn = players.getFirst();
-            playerIdx = 1;
-            word = words.get(rand.nextInt(words.size()));
-            broadcast(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
-            turn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
+            if (!isRunning) {
+                turn = players.getFirst();
+                playerIdx = 0;
+                word = words.get(rand.nextInt(words.size()));
+                broadcast(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
+                isRunning = true;
+                turn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
+            } else {
+                player.getWebSocket().send(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
+            }
         } else {
             broadcast(gson.toJson(Map.of("type", "wait")));
         }
@@ -61,6 +68,7 @@ public class GameSession {
             if(players.size() >= 2) {
                 nextTurn();
             } else {
+                isRunning = false;
                 broadcast(gson.toJson(Map.of("type", "wait")));
             }
         }
@@ -133,8 +141,8 @@ public class GameSession {
         }
     }
 
-    private void readWordsFile(String filePath) throws FileNotFoundException {
-        File file = new File(filePath);
+    private void readWordsFile() throws FileNotFoundException {
+        File file = new File("words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());
@@ -169,6 +177,8 @@ public class GameSession {
         playerIdx = (playerIdx + 1) % players.size();
         turn = players.get(playerIdx);
         word = words.get(rand.nextInt(words.size()));
+        lastCanvasState = null;
+        broadcast(gson.toJson(Map.of("type", "clear")));
         broadcast(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
         turn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
     }

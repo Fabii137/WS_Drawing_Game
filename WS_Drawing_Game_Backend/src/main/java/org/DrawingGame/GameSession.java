@@ -71,6 +71,15 @@ public class GameSession {
     public int getGameSize() {
         return players.size();
     }
+    public boolean doesNameExist(String username) {
+        for(Player p : players) {
+            if(p.getUsername().equals(username)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public void handleMessage(WebSocket ws, String message) {
         JsonObject jsonMessage = JsonParser.parseString(message).getAsJsonObject();

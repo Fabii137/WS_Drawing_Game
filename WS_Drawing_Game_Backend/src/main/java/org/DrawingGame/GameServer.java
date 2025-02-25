@@ -37,9 +37,11 @@ public class GameServer extends WebSocketServer {
         String username = queryString.substring(idx+1);
         Player player = new Player(webSocket, username);
 
+
+        //TODO: find a solution for multiple name problem + (maybe)create lobby
         GameSession availableSession = null;
         for(GameSession session : gameSessions) {
-            if(session.getGameSize() <= MAX_SIZE) {
+            if(session.getGameSize() <= MAX_SIZE && !session.doesNameExist(username)) {
                 availableSession = session;
             }
         }

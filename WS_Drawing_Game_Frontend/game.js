@@ -39,6 +39,7 @@ socket.onmessage = (event) => {
             statusElement.innerText = 'Status: Waiting for players';
             break;
         case "start":
+            color = 'black'
             word = null;
             document.getElementById("word").innerText = "";
             currentTurn = data.turn;

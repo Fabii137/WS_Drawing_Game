@@ -10,7 +10,7 @@ window.addEventListener('load', () => {
 	document.addEventListener('mousemove', sketch); 
 	window.addEventListener('resize', resize); 
 
-    socket.send(JSON.stringify({ type: "get_canvas" }));
+    // socket.send(JSON.stringify({ type: "get_canvas" }));
 }); 
 
 document.addEventListener("visibilitychange", () => {
@@ -21,8 +21,6 @@ document.addEventListener("visibilitychange", () => {
 
 myTurn = false;
 word = null;
-let originalCanvasWidth = 800;
-let originalCanvasHeight = 600; 
 
 const socket = new WebSocket(`ws://localhost:8080?username=${username}`);
 
@@ -159,7 +157,7 @@ function addMessage(message, name) {
     let chat = document.getElementById("chat");
     
     let messageDiv = document.createElement("div");
-    messageDiv.classList.add("message", "user");
+    messageDiv.classList.add("message");
 
     let messageText = document.createElement("div");
     messageText.classList.add("text");

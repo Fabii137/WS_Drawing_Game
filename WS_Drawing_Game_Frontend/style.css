@@ -7,10 +7,6 @@ body{
     text-align: center;
 }
 
-.player_count {
-    margin-left: 2em;
-}
-
 .container {
     display: flex;
     height: 100%;

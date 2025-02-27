@@ -36,14 +36,12 @@ socket.onmessage = (event) => {
     
     switch(data.type) {
         case "wait":
+            reset();
             statusElement.innerText = 'Status: Waiting for players';
             break;
         case "start":
-            color = 'black'
-            word = null;
-            document.getElementById("word").innerText = "";
-            currentTurn = data.turn;
-            myTurn = username === currentTurn;
+            reset();
+            myTurn = data.turn == username;
             statusElement.innerText = (myTurn) ? 'Status: Your Turn!' : 'Status: Current Turn: ' + currentTurn;
             addMessage("round starts!");
             break;
@@ -80,6 +78,13 @@ function updateCanvas(imgData) {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
     img.src = imgData;
+}
+
+function reset() {
+    color = 'black';
+    word = null;
+    document.getElementById("word").innerText = "";
+    myTurn = false;
 }
 
 function resize(){ 

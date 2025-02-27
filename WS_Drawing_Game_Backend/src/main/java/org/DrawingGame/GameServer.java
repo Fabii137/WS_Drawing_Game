@@ -12,15 +12,17 @@ import java.util.List;
 import java.util.Map;
 
 public class GameServer extends WebSocketServer {
-    private final int MAX_SIZE = 3;
+    private final int MAX_SIZE = 10;
     private final int port;
+    private final String host;
     private final List<GameSession> gameSessions = new ArrayList<>();
     private final Map<WebSocket, GameSession> playerToGameSession = new HashMap<>();
 
     private final Gson gson = new Gson();
 
-    public GameServer(int port) {
-        super(new InetSocketAddress(port));
+    public GameServer(String host, int port) {
+        super(new InetSocketAddress(host, port));
+        this.host = host;
         this.port = port;
     }
 
@@ -54,9 +56,6 @@ public class GameServer extends WebSocketServer {
         Player newPlayer = new Player(webSocket, username);
         availableSession.addPlayer(newPlayer);
         playerToGameSession.put(player.getWebSocket(), availableSession);
-        if(availableSession.getGameSize() < 2) {
-            newPlayer.getWebSocket().send(gson.toJson(Map.of("type", "wait")));
-        }
     }
 
     @Override
@@ -85,6 +84,6 @@ public class GameServer extends WebSocketServer {
 
     @Override
     public void onStart() {
-        System.out.println("Server started on port " + port);
+        System.out.println("Server started on " + host + ":" + port);
     }
 }

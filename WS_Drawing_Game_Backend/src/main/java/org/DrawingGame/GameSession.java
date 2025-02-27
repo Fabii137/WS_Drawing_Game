@@ -11,20 +11,19 @@ import java.util.*;
 
 public class GameSession {
     private final Gson gson;
-    Random rand = new Random();
+    private final Random rand = new Random();
     private final List<Player> players;
     private String word = null;
     private Player turn;
     private int playerIdx = 0;
     private String lastCanvasState = null;
     private final List<String> words;
-    private boolean isRunning;
+    private boolean isRunning = false;
 
     public GameSession() {
         words = new ArrayList<>();
         gson = new Gson();
         players = new ArrayList<>();
-        isRunning = false;
         try {
             readWordsFile();
         } catch (FileNotFoundException e) {

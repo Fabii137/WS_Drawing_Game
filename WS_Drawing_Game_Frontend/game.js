@@ -19,8 +19,15 @@ document.addEventListener("visibilitychange", () => {
     }
 });
 
+document.getElementById("messageInput").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+    }
+});
+
 myTurn = false;
 word = null;
+points = 0;
 
 const socket = new WebSocket(`ws://localhost:8080?username=${username}`);
 
@@ -28,11 +35,11 @@ socket.onopen = () => {
     console.log("Connected to server");
 }
 
-const statusElement = document.getElementById("status");
-
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     console.log(data)
+    const statusElement = document.getElementById("status");
+    const pointsElement = document.getElementById("points");
     
     switch(data.type) {
         case "wait":
@@ -42,11 +49,15 @@ socket.onmessage = (event) => {
         case "start":
             reset();
             myTurn = data.turn == username;
-            statusElement.innerText = (myTurn) ? 'Status: Your Turn!' : 'Status: Current Turn: ' + currentTurn;
+            statusElement.innerText = (myTurn) ? 'Status: Your Turn!' : 'Status: Current Turn: ' + data.turn;
             addMessage("round starts!");
             break;
         case "message":
             addMessage(data.data, data.username)
+            break;
+        case "points":
+            points = data.data;
+            pointsElement.innerText = `Score: ${points}`;
             break;
         case "correct":
             addMessage(data.username + ' guessed the word!');
@@ -155,11 +166,21 @@ function sendMessage() {
     let text = input.value.trim();
     if (text === "") 
         return;
+    else if(text.length > 100) {
+        let error = document.getElementById("error");
+        error.innerText = "input cannot be longer than 100 characters!";
+
+        setTimeout(() => {
+            error.innerText = "";
+        }, 3000)
+        return;
+    }
 
     addMessage(text, "You");
     input.value = "";
 
     socket.send(JSON.stringify({ type: "message", data: text, username: username }));
+    socket.send(JSON.stringify({ type: "get_canvas" }));
 }
 
 function addMessage(message, name) {

@@ -5,12 +5,12 @@ import org.java_websocket.WebSocket;
 public class Player {
     private WebSocket ws;
     private String username;
-    private boolean isDone;
+    private int points;
 
     public Player(WebSocket ws, String username) {
         this.ws = ws;
         this.username = username;
-        isDone = false;
+        points = 0;
     }
 
     public WebSocket getWebSocket() {
@@ -20,11 +20,16 @@ public class Player {
     public String getUsername() {
         return username;
     }
-    public void setDone(boolean isDone) {
-        this.isDone = isDone;
+
+    public int getPoints() {
+        return points;
     }
 
-    public boolean isDone() {
-        return isDone;
+    public void addPoints(int amount) {
+        points += amount;
+    }
+
+    public void resetPoints() {
+        points = 0;
     }
 }

@@ -19,11 +19,13 @@ public class GameSession {
     private String lastCanvasState = null;
     private final List<String> words;
     private boolean isRunning = false;
+    private List<Player> guessedPlayers;
 
     public GameSession() {
         words = new ArrayList<>();
         gson = new Gson();
         players = new ArrayList<>();
+        guessedPlayers = new ArrayList<>();
         try {
             readWordsFile();
         } catch (FileNotFoundException e) {
@@ -113,12 +115,14 @@ public class GameSession {
                 Player author = getPlayerFromWebSocket(ws);
                 String msg = jsonMessage.get("data").getAsString();
 
-                if(msg.equals(word)) {
-                    author.setDone(true);
+                if(msg.equals(word) && author != turn && !guessedPlayers.contains(author)) {
                     broadcast(gson.toJson(Map.of("type", "correct", "username", author.getUsername())));
-
+                    int points = 1000 - (10 * guessedPlayers.size());
+                    guessedPlayers.add(author);
+                    author.addPoints(points);
+                    ws.send(gson.toJson(Map.of("type", "points", "data", Integer.toString(author.getPoints()))));
                     if(checkDone()) {
-                        nextTurn();
+                        endTurn();
                     }
                 } else {
                     broadcastBut(author, gson.toJson(Map.of("type", "message", "data", msg, "username", author.getUsername())));
@@ -160,23 +164,22 @@ public class GameSession {
     }
 
     private boolean checkDone() {
-        for(Player p : players) {
-            if(p != turn && !p.isDone()) {
-                return false;
-            }
-        }
-        return true;
+        return guessedPlayers.size() == (players.size() - 1);
+    }
+
+    private void endTurn() {
+        int turnPlayerPoints = 1000 - (10 * ((players.size() - 1) - guessedPlayers.size()));
+        turn.addPoints(turnPlayerPoints);
+        turn.getWebSocket().send(gson.toJson(Map.of("type", "points", "data", Integer.toString(turn.getPoints()))));
+        nextTurn();
     }
 
     private void nextTurn() {
-        for(Player p : players) {
-           p.setDone(false);
-        }
-
         playerIdx = (playerIdx + 1) % players.size();
         turn = players.get(playerIdx);
         word = words.get(rand.nextInt(words.size()));
         lastCanvasState = null;
+        guessedPlayers.clear();
         broadcast(gson.toJson(Map.of("type", "clear")));
         broadcast(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
         turn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));

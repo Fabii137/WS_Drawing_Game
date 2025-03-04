@@ -3,6 +3,10 @@ if(!username || username === "") {
     window.location.href = 'index.html'
 }
 
+
+const canvas = document.querySelector('#canvas'); 
+const ctx = canvas.getContext('2d'); 
+
 window.addEventListener('load', () => { 
 	resize();
 	document.addEventListener('mousedown', startDrawing); 
@@ -12,6 +16,8 @@ window.addEventListener('load', () => {
 
     // socket.send(JSON.stringify({ type: "get_canvas" }));
 }); 
+
+const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
 
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
@@ -25,11 +31,12 @@ document.getElementById("messageInput").addEventListener("keypress", function(ev
     }
 });
 
-myTurn = false;
-word = null;
-points = 0;
+let myTurn = false;
+let word = null;
+let points = 0;
+let interval = null;
 
-const socket = new WebSocket(`ws://localhost:8080?username=${username}`);
+
 
 socket.onopen = () => {
     console.log("Connected to server");
@@ -49,6 +56,11 @@ socket.onmessage = (event) => {
         case "start":
             reset();
             myTurn = data.turn == username;
+            if(myTurn) {
+                interval = setInterval(sendCanvasData, 1000)
+            } else {
+                clearInterval(interval);
+            }
             statusElement.innerText = (myTurn) ? 'Status: Your Turn!' : 'Status: Current Turn: ' + data.turn;
             addMessage("round starts!");
             break;
@@ -74,8 +86,6 @@ socket.onmessage = (event) => {
     }
 };
 
-const canvas = document.querySelector('#canvas'); 
-const ctx = canvas.getContext('2d'); 
 
 function sendCanvasData() {
     const imgData = canvas.toDataURL("image/png"); 
@@ -126,10 +136,6 @@ function startDrawing(event){
 } 
 function stopDrawing(){ 
     paint = false; 
-
-    if(myTurn) {
-        sendCanvasData();
-    }
 } 
 
 function setColor(setColor) {
@@ -159,6 +165,10 @@ function draw(event){
     getPosition(event); 
     ctx.lineTo(coord.x , coord.y); 
     ctx.stroke(); 
+
+    if(myTurn) {
+        sendCanvasData();
+    }
 }
 
 function sendMessage() {
@@ -192,6 +202,10 @@ function addMessage(message, name) {
     let messageText = document.createElement("div");
     messageText.classList.add("text");
     messageText.textContent = message;
+
+    if(name === "You") {
+        messageDiv.classList.add("myMessage");
+    }
 
     let sender = document.createElement("span");
     sender.textContent = name;

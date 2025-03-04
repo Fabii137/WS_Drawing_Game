@@ -53,6 +53,8 @@ body{
     padding: 10px;
     flex-grow: 1;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .message {
@@ -65,10 +67,12 @@ body{
     word-wrap: break-word;
     overflow-wrap: break-word;
     white-space: normal;
+}
 
-    span {
-        font-size: 0.7em;
-    }
+.myMessage {
+    align-self: flex-end;
+    background-color: #d1e7dd;
+    border: 1px solid #b1dfbb;
 }
 
 #messageInput {

@@ -101,7 +101,7 @@ public class GameSession {
             if(getPlayerFromWebSocket(ws) == turn) {
                 String imgData = jsonMessage.get("data").getAsString();
                 lastCanvasState = imgData;
-                broadcast(gson.toJson(Map.of("type", "canvas", "data", imgData)));
+                broadcastBut(turn, gson.toJson(Map.of("type", "canvas", "data", imgData)));
             }
         }
         if("get_canvas".equals(type)) {
@@ -145,7 +145,7 @@ public class GameSession {
     }
 
     private void readWordsFile() throws FileNotFoundException {
-        File file = new File("words.txt");
+        File file = new File("/home/words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());

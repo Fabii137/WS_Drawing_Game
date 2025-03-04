@@ -59,7 +59,8 @@ body{
 
 .message {
     height: fit-content;
-    max-width: fit-content;
+    width: fit-content;
+    max-width: 80%;
     border-radius: 5px;
     padding: 10px;
     border: 1px solid black;
@@ -67,17 +68,24 @@ body{
     word-wrap: break-word;
     overflow-wrap: break-word;
     white-space: normal;
+
+    span {
+        color: darkblue;
+        font-style: italic;    
+    }
 }
 
 .myMessage {
     align-self: flex-end;
     background-color: #d1e7dd;
     border: 1px solid #b1dfbb;
+    max-width: 80%;
 }
 
 #messageInput {
     margin-top: 10px;
     height: 2em;
+    width: 70%;
     border-radius: 30px;
     text-align: center;
     border: 1px solid black;

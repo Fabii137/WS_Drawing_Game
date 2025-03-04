@@ -3,9 +3,10 @@ if(!username || username === "") {
     window.location.href = 'index.html'
 }
 
-
 const canvas = document.querySelector('#canvas'); 
 const ctx = canvas.getContext('2d'); 
+const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
+//const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 
 window.addEventListener('load', () => { 
 	resize();
@@ -16,8 +17,6 @@ window.addEventListener('load', () => {
 
     // socket.send(JSON.stringify({ type: "get_canvas" }));
 }); 
-
-const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
 
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
@@ -35,6 +34,9 @@ let myTurn = false;
 let word = null;
 let points = 0;
 let interval = null;
+let coord = {x:0 , y:0}; 
+let painting = false;
+let color = 'black'; 
 
 
 
@@ -56,10 +58,15 @@ socket.onmessage = (event) => {
         case "start":
             reset();
             myTurn = data.turn == username;
-            if(myTurn) {
-                interval = setInterval(sendCanvasData, 1000)
+            if (myTurn) {
+                interval = setInterval(() => {
+                    if (painting) {
+                        sendCanvasData();
+                    }
+                }, 100);
             } else {
                 clearInterval(interval);
+                painting = false;
             }
             statusElement.innerText = (myTurn) ? 'Status: Your Turn!' : 'Status: Current Turn: ' + data.turn;
             addMessage("round starts!");
@@ -119,10 +126,6 @@ function resize(){
     }
     
 } 
-	
-let coord = {x:0 , y:0}; 
-let paint = false;
-let color = 'black'; 
 
 function getPosition(event){ 
     coord.x = event.clientX - canvas.offsetLeft; 
@@ -130,17 +133,22 @@ function getPosition(event){
 } 
 function startDrawing(event){ 
     if(myTurn) {
-        paint = true; 
+        painting = true; 
         getPosition(event); 
     }
 } 
 function stopDrawing(){ 
-    paint = false; 
+    painting = false; 
+
+    if(myTurn) {
+        sendCanvasData();
+    }
 } 
 
 function setColor(setColor) {
     color = setColor;
 }
+
 
 function forceClear() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -154,7 +162,7 @@ function clearCanvas() {
 }
 	
 function draw(event){ 
-    if (!paint) 
+    if (!painting) 
         return; 
 
     ctx.beginPath(); 
@@ -182,7 +190,7 @@ function sendMessage() {
         return;
     }
 
-    addMessage(text, "You");
+    addMessage(text, "");
     input.value = "";
 
     socket.send(JSON.stringify({ type: "message", data: text, username: username }));
@@ -199,12 +207,14 @@ function addMessage(message, name) {
     messageText.classList.add("text");
     messageText.textContent = message;
 
-    if(name === "You") {
-        messageDiv.classList.add("myMessage");
-    }
-
     let sender = document.createElement("span");
-    sender.textContent = name;
+    if(name === "") {
+        messageDiv.classList.add("myMessage");
+        sender.textContent = "You"
+    } else {
+        sender.textContent = name;
+    }
+    
 
     messageDiv.appendChild(messageText);
     messageDiv.appendChild(sender);

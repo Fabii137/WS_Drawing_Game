@@ -3,8 +3,8 @@ package org.DrawingGame;
 import org.java_websocket.WebSocket;
 
 public class Player {
-    private WebSocket ws;
-    private String username;
+    private final WebSocket ws;
+    private final String username;
     private int points;
 
     public Player(WebSocket ws, String username) {

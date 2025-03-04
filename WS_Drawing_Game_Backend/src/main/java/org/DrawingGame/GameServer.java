@@ -18,8 +18,6 @@ public class GameServer extends WebSocketServer {
     private final List<GameSession> gameSessions = new ArrayList<>();
     private final Map<WebSocket, GameSession> playerToGameSession = new HashMap<>();
 
-    private final Gson gson = new Gson();
-
     public GameServer(String host, int port) {
         super(new InetSocketAddress(host, port));
         this.host = host;
@@ -35,12 +33,9 @@ public class GameServer extends WebSocketServer {
         if(idx == -1) {
             webSocket.close();
         }
-
         String username = queryString.substring(idx+1);
-        Player player = new Player(webSocket, username);
 
-
-        //TODO: find a solution for multiple name problem + (maybe)create lobby
+        //TODO: find a solution for multiple name problem (create lobby?)
         GameSession availableSession = null;
         for(GameSession session : gameSessions) {
             if(session.getGameSize() < MAX_SIZE && !session.doesNameExist(username)) {
@@ -55,7 +50,7 @@ public class GameServer extends WebSocketServer {
 
         Player newPlayer = new Player(webSocket, username);
         availableSession.addPlayer(newPlayer);
-        playerToGameSession.put(player.getWebSocket(), availableSession);
+        playerToGameSession.put(newPlayer.getWebSocket(), availableSession);
     }
 
     @Override

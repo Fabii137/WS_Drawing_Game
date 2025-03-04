@@ -14,12 +14,12 @@ public class GameSession {
     private final Random rand = new Random();
     private final List<Player> players;
     private String word = null;
-    private Player turn;
+    private Player currentTurn;
     private int playerIdx = 0;
     private String lastCanvasState = null;
     private final List<String> words;
     private boolean isRunning = false;
-    private List<Player> guessedPlayers;
+    private final List<Player> guessedPlayers;
 
     public GameSession() {
         words = new ArrayList<>();
@@ -39,14 +39,14 @@ public class GameSession {
 
         if(players.size() > 1) {
             if (!isRunning) {
-                turn = players.getFirst();
+                currentTurn = players.getFirst();
                 playerIdx = 0;
                 word = words.get(rand.nextInt(words.size()));
-                broadcast(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
+                broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
                 isRunning = true;
-                turn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
+                currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
             } else {
-                player.getWebSocket().send(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
+                player.getWebSocket().send(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
             }
         } else {
             broadcast(gson.toJson(Map.of("type", "wait")));
@@ -64,7 +64,7 @@ public class GameSession {
 
         players.remove(playerToRemove);
 
-        if(playerToRemove == turn) {
+        if(playerToRemove == currentTurn) {
             broadcast(gson.toJson(Map.of("type", "clear")));
             if(players.size() >= 2) {
                 nextTurn();
@@ -96,12 +96,12 @@ public class GameSession {
             return;
 
         String type = jsonMessage.get("type").getAsString();
-        System.out.println(type);
+
         if("canvas".equals(type)) {
-            if(getPlayerFromWebSocket(ws) == turn) {
+            if(getPlayerFromWebSocket(ws) == currentTurn) {
                 String imgData = jsonMessage.get("data").getAsString();
                 lastCanvasState = imgData;
-                broadcastBut(turn, gson.toJson(Map.of("type", "canvas", "data", imgData)));
+                broadcastBut(currentTurn, gson.toJson(Map.of("type", "canvas", "data", imgData)));
             }
         }
         if("get_canvas".equals(type)) {
@@ -115,7 +115,7 @@ public class GameSession {
                 Player author = getPlayerFromWebSocket(ws);
                 String msg = jsonMessage.get("data").getAsString();
 
-                if(msg.equals(word) && author != turn && !guessedPlayers.contains(author)) {
+                if(msg.equalsIgnoreCase(word) && author != currentTurn && !guessedPlayers.contains(author)) {
                     broadcast(gson.toJson(Map.of("type", "correct", "username", author.getUsername())));
                     int points = 1000 - (10 * guessedPlayers.size());
                     guessedPlayers.add(author);
@@ -146,6 +146,7 @@ public class GameSession {
 
     private void readWordsFile() throws FileNotFoundException {
         File file = new File("/home/words.txt");
+        //File file = new File("words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());
@@ -169,19 +170,19 @@ public class GameSession {
 
     private void endTurn() {
         int turnPlayerPoints = 1000 - (10 * ((players.size() - 1) - guessedPlayers.size()));
-        turn.addPoints(turnPlayerPoints);
-        turn.getWebSocket().send(gson.toJson(Map.of("type", "points", "data", Integer.toString(turn.getPoints()))));
+        currentTurn.addPoints(turnPlayerPoints);
+        currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "points", "data", Integer.toString(currentTurn.getPoints()))));
         nextTurn();
     }
 
     private void nextTurn() {
         playerIdx = (playerIdx + 1) % players.size();
-        turn = players.get(playerIdx);
+        currentTurn = players.get(playerIdx);
         word = words.get(rand.nextInt(words.size()));
         lastCanvasState = null;
         guessedPlayers.clear();
         broadcast(gson.toJson(Map.of("type", "clear")));
-        broadcast(gson.toJson(Map.of("type", "start", "turn", turn.getUsername())));
-        turn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
+        broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+        currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
     }
 }

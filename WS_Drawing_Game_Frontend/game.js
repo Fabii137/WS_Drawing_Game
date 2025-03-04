@@ -165,10 +165,6 @@ function draw(event){
     getPosition(event); 
     ctx.lineTo(coord.x , coord.y); 
     ctx.stroke(); 
-
-    if(myTurn) {
-        sendCanvasData();
-    }
 }
 
 function sendMessage() {

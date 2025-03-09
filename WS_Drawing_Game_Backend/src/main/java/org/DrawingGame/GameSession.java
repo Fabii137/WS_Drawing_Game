@@ -71,6 +71,7 @@ public class GameSession {
             } else {
                 isRunning = false;
                 broadcast(gson.toJson(Map.of("type", "wait")));
+                lastCanvasState = ""; //merge this
             }
         }
         if(playerToRemove != null)
@@ -145,8 +146,8 @@ public class GameSession {
     }
 
     private void readWordsFile() throws FileNotFoundException {
-        File file = new File("/home/words.txt");
-        //File file = new File("words.txt");
+//        File file = new File("/home/words.txt");
+        File file = new File("words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());

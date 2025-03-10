@@ -8,24 +8,33 @@ import org.java_websocket.WebSocket;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class GameSession {
+    private final int ROUND_DURATION = 300;
     private final Gson gson;
     private final Random rand = new Random();
     private final List<Player> players;
+    private final List<Player> guessedPlayers;
+    private final List<String> words;
     private String word = null;
     private Player currentTurn;
     private int playerIdx = 0;
     private String lastCanvasState = null;
-    private final List<String> words;
     private boolean isRunning = false;
-    private final List<Player> guessedPlayers;
+    private int timeLeft;
+    ScheduledExecutorService timeService;
+
 
     public GameSession() {
         words = new ArrayList<>();
         gson = new Gson();
         players = new ArrayList<>();
         guessedPlayers = new ArrayList<>();
+        timeService = Executors.newScheduledThreadPool(1);
+        timeLeft = ROUND_DURATION;
         try {
             readWordsFile();
         } catch (FileNotFoundException e) {
@@ -37,7 +46,7 @@ public class GameSession {
     public void addPlayer(Player player) {
         players.add(player);
 
-        if(players.size() > 1) {
+        if(players.size() >= 2) {
             if (!isRunning) {
                 startGame();
             } else {
@@ -63,9 +72,10 @@ public class GameSession {
 
         if(wasCurrentTurn) {
             broadcast(gson.toJson(Map.of("type", "clear")));
-            if(players.size() > 1) {
+            if(players.size() >= 2) {
                 nextTurn();
             } else {
+                timeService.shutdown();
                 isRunning = false;
                 lastCanvasState = "";
                 broadcast(gson.toJson(Map.of("type", "clear")));
@@ -83,6 +93,7 @@ public class GameSession {
     public int getGameSize() {
         return players.size();
     }
+
     public boolean doesNameExist(String username) {
         for(Player p : players) {
             if(p.getUsername().equals(username)) {
@@ -176,6 +187,9 @@ public class GameSession {
         playerIdx = 0;
         word = words.get(rand.nextInt(words.size()));
         broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+
+        activateTimeService();
+
         isRunning = true;
         currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
     }
@@ -188,6 +202,8 @@ public class GameSession {
     }
 
     private void nextTurn() {
+        timeService.shutdown();
+
         playerIdx = (playerIdx + 1) % players.size();
         currentTurn = players.get(playerIdx);
         word = words.get(rand.nextInt(words.size()));
@@ -196,5 +212,19 @@ public class GameSession {
         broadcast(gson.toJson(Map.of("type", "clear")));
         broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
         currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
+
+        activateTimeService();
+    }
+
+    private void activateTimeService() {
+        timeLeft = ROUND_DURATION;
+        timeService = Executors.newScheduledThreadPool(1);
+        Runnable timeRunnable = () -> {
+            broadcast(gson.toJson(Map.of("type", "time", "data", timeLeft)));
+            timeLeft--;
+            if(timeLeft < 0)
+                nextTurn();
+        };
+        timeService.scheduleAtFixedRate(timeRunnable, 0, 1, TimeUnit.SECONDS);
     }
 }

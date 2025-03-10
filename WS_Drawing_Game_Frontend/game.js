@@ -36,6 +36,7 @@ let coord = {x:0 , y:0};
 let painting = false;
 let color = 'black'; 
 let fillBackground = false;
+let timeLeft = null;
 
 
 
@@ -48,6 +49,7 @@ socket.onmessage = (event) => {
     console.log(data)
     const statusElement = document.getElementById("status");
     const pointsElement = document.getElementById("points");
+    const timeElement = document.getElementById("time");
     
     switch(data.type) {
         case "wait":
@@ -76,6 +78,10 @@ socket.onmessage = (event) => {
         case "points":
             points = data.data;
             pointsElement.innerText = `Score: ${points}`;
+            break;
+        case "time":
+            timeLeft = data.data;
+            timeElement.innerText = `${timeLeft} seconds left!`;
             break;
         case "correct":
             addMessage(data.username + ' guessed the word!');

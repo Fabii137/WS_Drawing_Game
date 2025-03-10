@@ -25,7 +25,7 @@ public class GameSession {
     private String lastCanvasState = null;
     private boolean isRunning = false;
     private int timeLeft;
-    ScheduledExecutorService timeService;
+    private ScheduledExecutorService timeService;
 
 
     public GameSession() {

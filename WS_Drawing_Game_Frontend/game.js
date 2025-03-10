@@ -35,6 +35,7 @@ let interval = null;
 let coord = {x:0 , y:0}; 
 let painting = false;
 let color = 'black'; 
+let fillBackground = false;
 
 
 
@@ -144,7 +145,18 @@ function stopDrawing(){
 } 
 
 function setColor(setColor) {
-    color = setColor;
+    if (fillBackground) {
+        ctx.fillStyle = setColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        fillBackground = false;
+        sendCanvasData();
+    } else {
+        color = setColor;
+    }
+}
+function setFillBackGround() {
+    fillBackground = true;
+    painting = false;
 }
 
 

@@ -65,6 +65,12 @@ public class GameSession {
             broadcast(gson.toJson(Map.of("type", "clear")));
             if(players.size() > 1) {
                 nextTurn();
+            } else {
+                isRunning = false;
+                lastCanvasState = "";
+                broadcast(gson.toJson(Map.of("type", "clear")));
+                broadcast(gson.toJson(Map.of("type", "wait")));
+                
             }
         }
 

@@ -6,6 +6,30 @@ body{
 
 /* index.html */
 
+.login_body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login_container {
+    width: 50%;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    label {
+        font-size: 2.5em;
+    }
+    input {
+        height: 3em;
+        width: 20em;
+        font-size: 1.5em;
+        text-align: center;
+    }
+}
 
 
 
@@ -31,6 +55,7 @@ body{
 .options {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5em;
 }
 
@@ -59,6 +84,7 @@ body{
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 0 3px 3px black;
 }
 
 .message {
@@ -90,7 +116,7 @@ body{
 #messageInput {
     margin-top: 10px;
     height: 2em;
-    width: 70%;
+    width: 75%;
     border-radius: 30px;
     text-align: center;
     border: 1px solid black;

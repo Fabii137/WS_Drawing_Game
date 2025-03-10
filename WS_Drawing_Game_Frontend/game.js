@@ -145,18 +145,26 @@ function stopDrawing(){
 } 
 
 function setColor(setColor) {
+    const bgFillBtn = document.getElementById("bg_fill_btn");
     if (fillBackground) {
         ctx.fillStyle = setColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         fillBackground = false;
+        bgFillBtn.style.backgroundColor = "white";
         sendCanvasData();
     } else {
         color = setColor;
     }
 }
 function setFillBackGround() {
-    fillBackground = true;
-    painting = false;
+    if(myTurn) {
+        const bgFillBtn = document.getElementById("bg_fill_btn");
+        fillBackground = !fillBackground;
+        bgFillBtn.style.backgroundColor = (fillBackground) ? "lightblue" : "white";
+
+        painting = false;
+    }
+    
 }
 
 

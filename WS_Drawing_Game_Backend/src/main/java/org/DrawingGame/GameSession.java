@@ -39,12 +39,7 @@ public class GameSession {
 
         if(players.size() > 1) {
             if (!isRunning) {
-                currentTurn = players.getFirst();
-                playerIdx = 0;
-                word = words.get(rand.nextInt(words.size()));
-                broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
-                isRunning = true;
-                currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
+                startGame();
             } else {
                 player.getWebSocket().send(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
             }
@@ -59,22 +54,24 @@ public class GameSession {
 
     public void deletePlayer(WebSocket player) {
         Player playerToRemove = getPlayerFromWebSocket(player);
-        if(playerToRemove == null)
+        if(playerToRemove == null) {
             System.out.println("Tried to delete player null");
-
+            return;
+        }
+        boolean wasCurrentTurn = playerToRemove == currentTurn;
         players.remove(playerToRemove);
 
-        if(playerToRemove == currentTurn) {
+        if(wasCurrentTurn) {
             broadcast(gson.toJson(Map.of("type", "clear")));
-            if(players.size() >= 2) {
+            if(players.size() > 1) {
                 nextTurn();
-            } else {
-                isRunning = false;
-                broadcast(gson.toJson(Map.of("type", "wait")));
             }
         }
-        if(playerToRemove != null)
-            players.remove(playerToRemove);
+
+        if(players.size() == 1) {
+            broadcast(gson.toJson(Map.of("type", "wait")));
+        }
+
     }
 
     public int getGameSize() {
@@ -145,8 +142,8 @@ public class GameSession {
     }
 
     private void readWordsFile() throws FileNotFoundException {
-        File file = new File("/home/words.txt");
-        //File file = new File("words.txt");
+//        File file = new File("/home/words.txt");
+        File file = new File("words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());
@@ -166,6 +163,15 @@ public class GameSession {
 
     private boolean checkDone() {
         return guessedPlayers.size() == (players.size() - 1);
+    }
+
+    private void startGame() {
+        currentTurn = players.getFirst();
+        playerIdx = 0;
+        word = words.get(rand.nextInt(words.size()));
+        broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+        isRunning = true;
+        currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
     }
 
     private void endTurn() {

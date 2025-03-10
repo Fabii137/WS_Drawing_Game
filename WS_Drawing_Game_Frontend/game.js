@@ -5,8 +5,8 @@ if(!username || username === "") {
 
 const canvas = document.querySelector('#canvas'); 
 const ctx = canvas.getContext('2d'); 
-const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
-//const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
+// const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
+const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 
 window.addEventListener('load', () => { 
 	resize();
@@ -14,8 +14,6 @@ window.addEventListener('load', () => {
 	document.addEventListener('mouseup', stopDrawing); 
 	document.addEventListener('mousemove', draw); 
 	window.addEventListener('resize', resize); 
-
-    // socket.send(JSON.stringify({ type: "get_canvas" }));
 }); 
 
 document.addEventListener("visibilitychange", () => {

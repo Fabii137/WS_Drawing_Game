@@ -5,8 +5,8 @@ if(!username || username === "") {
 
 const canvas = document.querySelector('#canvas'); 
 const ctx = canvas.getContext('2d'); 
-const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
-// const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
+// const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
+const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 
 window.addEventListener('load', () => { 
 	resize();
@@ -29,6 +29,7 @@ document.getElementById("messageInput").addEventListener("keypress", function(ev
 });
 
 let myTurn = false;
+let id = null;
 let word = null;
 let points = 0;
 let interval = null;
@@ -58,7 +59,7 @@ socket.onmessage = (event) => {
             break;
         case "start":
             reset();
-            myTurn = data.turn == username;
+            myTurn = data.id == id;
             if (myTurn) {
                 interval = setInterval(() => {
                     if (painting) {
@@ -69,8 +70,11 @@ socket.onmessage = (event) => {
                 clearInterval(interval);
                 painting = false;
             }
-            statusElement.innerText = (myTurn) ? 'Your Turn!' : 'Current Turn \u2192  ' + data.turn;
+            statusElement.innerText = (myTurn) ? 'Your Turn!' : 'Current Turn \u2192  ' + data.name;
             addMessage("round starts!");
+            break;
+        case "id":
+            id = data.data;
             break;
         case "message":
             addMessage(data.data, data.username)

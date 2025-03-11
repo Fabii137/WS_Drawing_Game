@@ -46,6 +46,13 @@ public class GameSession {
     }
 
     public void addPlayer(Player player) {
+        int playerID = 0;
+        while(doesIDExist(playerID)) {
+            playerID++;
+        }
+        player.setId(playerID);
+        player.getWebSocket().send(gson.toJson(Map.of("type", "id", "data", Integer.toString(player.getId()))));
+
         players.add(player);
 
         if(players.size() >= 2) {
@@ -94,6 +101,14 @@ public class GameSession {
 
     public int getGameSize() {
         return players.size();
+    }
+
+    private boolean doesIDExist(int id) {
+        for(Player p : players) {
+            if (p.getId() == id)
+                return true;
+        }
+        return false;
     }
 
     public boolean doesNameExist(String username) {
@@ -179,15 +194,15 @@ public class GameSession {
 
     private void sendFullGameData(Player player) {
         WebSocket ws = player.getWebSocket();
-        ws.send(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+        ws.send(gson.toJson(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()))));
         ws.send(gson.toJson(Map.of("type", "points", "data", "0")));
         ws.send(gson.toJson(Map.of("type", "canvas", "data", lastCanvasState)));
 
     }
 
     private void readWordsFile() throws FileNotFoundException {
-        File file = new File("/home/words.txt");
-//        File file = new File("words.txt");
+//        File file = new File("/home/words.txt");
+        File file = new File("words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());
@@ -213,7 +228,7 @@ public class GameSession {
         currentTurn = players.getFirst();
         playerIdx = 0;
         word = words.get(rand.nextInt(words.size()));
-        broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+        broadcast(gson.toJson(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()))));
         broadcastPoints();
         activateTimeService();
 
@@ -244,7 +259,7 @@ public class GameSession {
         lastCanvasState = null;
         guessedPlayers.clear();
         broadcast(gson.toJson(Map.of("type", "clear")));
-        broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+        broadcast(gson.toJson(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()))));
         currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
 
         activateTimeService();

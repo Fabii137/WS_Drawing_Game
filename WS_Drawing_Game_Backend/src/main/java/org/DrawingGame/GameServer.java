@@ -1,6 +1,5 @@
 package org.DrawingGame;
 
-import com.google.gson.Gson;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -35,10 +34,10 @@ public class GameServer extends WebSocketServer {
         }
         String username = queryString.substring(idx+1);
 
-        //TODO: find a solution for multiple name problem (create lobby?)
+        //TODO: create lobby?
         GameSession availableSession = null;
         for(GameSession session : gameSessions) {
-            if(session.getGameSize() < MAX_SIZE && !session.doesNameExist(username)) {
+            if(session.getGameSize() < MAX_SIZE) {
                 availableSession = session;
             }
         }

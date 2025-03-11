@@ -18,6 +18,7 @@ public class GameSession {
     private final Random rand = new Random();
     private final List<Player> players;
     private final List<Player> guessedPlayers;
+    private final Map<Player, Integer> playerToPreparedPoints;
     private final List<String> words;
     private String word = null;
     private Player currentTurn;
@@ -33,6 +34,7 @@ public class GameSession {
         gson = new Gson();
         players = new ArrayList<>();
         guessedPlayers = new ArrayList<>();
+        playerToPreparedPoints = new HashMap<>();
         timeService = Executors.newScheduledThreadPool(1);
         timeLeft = ROUND_DURATION;
         try {
@@ -50,7 +52,7 @@ public class GameSession {
             if (!isRunning) {
                 startGame();
             } else {
-                player.getWebSocket().send(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+                sendFullGameData(player);
             }
         } else {
             broadcast(gson.toJson(Map.of("type", "wait")));
@@ -131,10 +133,21 @@ public class GameSession {
 
                 if(msg.equalsIgnoreCase(word) && author != currentTurn && !guessedPlayers.contains(author)) {
                     broadcast(gson.toJson(Map.of("type", "correct", "username", author.getUsername())));
-                    int points = 1000 - (10 * guessedPlayers.size());
                     guessedPlayers.add(author);
-                    author.addPoints(points);
+
+                    int basePoints = 1000;
+                    int guessPosition = guessedPlayers.size();
+                    int maxPlayers = players.size();
+                    int points = 0;
+                    if (maxPlayers > 2) {
+                        double decayFactor = 0.7;
+                        points = (int)(basePoints * Math.pow(decayFactor, guessPosition - 1));
+                    } else if (maxPlayers == 2) {
+                        points = basePoints;
+                    }
+                    playerToPreparedPoints.put(author, points);
                     ws.send(gson.toJson(Map.of("type", "points", "data", Integer.toString(author.getPoints()))));
+
                     if(checkDone()) {
                         endTurn();
                     }
@@ -151,6 +164,12 @@ public class GameSession {
         }
     }
 
+    private void broadcastPoints() {
+        for(Player p : players) {
+            p.getWebSocket().send(gson.toJson(Map.of("type", "points", "data", Integer.toString(p.getPoints()))));
+        }
+    }
+
     private void broadcastBut(Player player, String message) {
         for(Player p : players) {
             if(p != player)
@@ -158,9 +177,17 @@ public class GameSession {
         }
     }
 
+    private void sendFullGameData(Player player) {
+        WebSocket ws = player.getWebSocket();
+        ws.send(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+        ws.send(gson.toJson(Map.of("type", "points", "data", "0")));
+        ws.send(gson.toJson(Map.of("type", "canvas", "data", lastCanvasState)));
+
+    }
+
     private void readWordsFile() throws FileNotFoundException {
-//        File file = new File("/home/words.txt");
-        File file = new File("words.txt");
+        File file = new File("/home/words.txt");
+//        File file = new File("words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());
@@ -187,7 +214,7 @@ public class GameSession {
         playerIdx = 0;
         word = words.get(rand.nextInt(words.size()));
         broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
-
+        broadcastPoints();
         activateTimeService();
 
         isRunning = true;
@@ -195,9 +222,16 @@ public class GameSession {
     }
 
     private void endTurn() {
-        int turnPlayerPoints = 1000 - (10 * ((players.size() - 1) - guessedPlayers.size()));
-        currentTurn.addPoints(turnPlayerPoints);
-        currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "points", "data", Integer.toString(currentTurn.getPoints()))));
+        int totalPoints = 0;
+        for(Player p : playerToPreparedPoints.keySet()) {
+            int preparedPoints = playerToPreparedPoints.get(p);
+            p.addPoints(preparedPoints);
+            totalPoints += preparedPoints;
+        }
+        playerToPreparedPoints.clear();
+        int drawerPoints = (int)(totalPoints * 0.5);
+        currentTurn.addPoints(drawerPoints);
+        broadcastPoints();
         nextTurn();
     }
 
@@ -223,7 +257,7 @@ public class GameSession {
             broadcast(gson.toJson(Map.of("type", "time", "data", timeLeft)));
             timeLeft--;
             if(timeLeft < 0)
-                nextTurn();
+                endTurn();
         };
         timeService.scheduleAtFixedRate(timeRunnable, 0, 1, TimeUnit.SECONDS);
     }

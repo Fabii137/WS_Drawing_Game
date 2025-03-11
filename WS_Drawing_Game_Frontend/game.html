@@ -9,8 +9,10 @@
 <body>
     <h1 id="status"></h1>
     <h2 id="word"></h2>
-    <h3 id="time"></h3>
-    <h3 id="points"></h3>
+    <div class="textContainer">
+        <h3 id="time"></h3>
+        <h3 id="points"></h3>
+    </div>
     <div class="container">
         <div class="canvas">
             <canvas id="canvas"></canvas>
@@ -33,7 +35,6 @@
             <div class="input-container">
                 <div class="error" id="error"></div>
                 <input type="text" id="messageInput" placeholder="Type a message...">
-                <!-- <button class="send_btn" onclick="sendMessage()">Send</button> -->
             </div>
         </div>
     

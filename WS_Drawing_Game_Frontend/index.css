@@ -27,6 +27,8 @@ body{
         height: 3em;
         width: 20em;
         font-size: 1.5em;
+        border-radius: 30px;
+        border: 1px solid black;
         text-align: center;
     }
 }
@@ -36,14 +38,21 @@ body{
 
 /* game.html */
 
-#status, #word, #points, #time {
+#status, #word {
     text-align: center;
+    margin-bottom: 0.5em;
+}
+
+.textContainer {
+    display: flex;
+    justify-content: center;
+    gap: 2em;
 }
 
 .container {
     display: flex;
     height: 100%;
-    margin: 2em;
+    margin: 0 2em 2em 2em;
     gap: 6em; 
 }
 #canvas {

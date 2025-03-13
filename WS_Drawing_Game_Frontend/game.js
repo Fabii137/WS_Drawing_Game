@@ -5,8 +5,8 @@ if(!username || username === "") {
 
 const canvas = document.querySelector('#canvas'); 
 const ctx = canvas.getContext('2d'); 
-const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
-// const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
+// const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
+const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 
 window.addEventListener('load', () => { 
 	resize();
@@ -55,6 +55,7 @@ socket.onmessage = (event) => {
         case "wait":
             reset();
             statusElement.innerText = 'Waiting for players';
+            statusElement.style.color = 'black';
             break;
         case "start":
             reset();
@@ -69,7 +70,13 @@ socket.onmessage = (event) => {
                 clearInterval(interval);
                 painting = false;
             }
-            statusElement.innerText = (myTurn) ? 'Your Turn!' : 'Current Turn \u2192  ' + data.turn;
+            if(myTurn) {
+                statusElement.innerText = 'Your Turn!';
+                statusElement.style.color = 'red';
+            } else {
+                statusElement.innerText = 'Current Turn \u2192  ' + data.turn;
+                statusElement.style.color = 'black';
+            }
             addMessage("round starts!");
             break;
         case "message":
@@ -85,6 +92,7 @@ socket.onmessage = (event) => {
             break;
         case "correct":
             addMessage(data.username + ' guessed the word!');
+            break;
         case "clear":
             forceClear();
             break;

@@ -75,7 +75,7 @@ socket.onmessage = (event) => {
                 statusElement.innerText = 'Your Turn!';
                 statusElement.style.color = 'red';
             } else {
-                statusElement.innerText = 'Current Turn \u2192  ' + data.turn;
+                statusElement.innerText = 'Current Turn \u2192  ' + data.name;
                 statusElement.style.color = 'black';
             }
             addMessage("round starts!");

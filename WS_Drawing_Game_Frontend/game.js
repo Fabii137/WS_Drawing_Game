@@ -29,6 +29,7 @@ document.getElementById("messageInput").addEventListener("keypress", function(ev
 });
 
 let myTurn = false;
+let id = null;
 let word = null;
 let points = 0;
 let interval = null;
@@ -59,7 +60,7 @@ socket.onmessage = (event) => {
             break;
         case "start":
             reset();
-            myTurn = data.turn == username;
+            myTurn = data.id == id;
             if (myTurn) {
                 interval = setInterval(() => {
                     if (painting) {
@@ -78,6 +79,9 @@ socket.onmessage = (event) => {
                 statusElement.style.color = 'black';
             }
             addMessage("round starts!");
+            break;
+        case "id":
+            id = data.data;
             break;
         case "message":
             addMessage(data.data, data.username)
@@ -193,7 +197,7 @@ function clearCanvas() {
     }
 }
 	
-function draw(event){ 
+function draw(event){
     if (!painting) 
         return; 
 

@@ -49,6 +49,13 @@ public class GameSession {
     }
 
     public void addPlayer(Player player) {
+        int playerID = 0;
+        while(doesIDExist(playerID)) {
+            playerID++;
+        }
+        player.setId(playerID);
+        player.getWebSocket().send(gson.toJson(Map.of("type", "id", "data", Integer.toString(player.getId()))));
+
         players.add(player);
 
         if(players.size() >= 2) {
@@ -97,6 +104,14 @@ public class GameSession {
 
     public int getGameSize() {
         return players.size();
+    }
+
+    private boolean doesIDExist(int id) {
+        for(Player p : players) {
+            if (p.getId() == id)
+                return true;
+        }
+        return false;
     }
 
     public boolean doesNameExist(String username) {
@@ -201,7 +216,7 @@ public class GameSession {
 
     private void sendFullGameData(Player player) {
         WebSocket ws = player.getWebSocket();
-        ws.send(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+        ws.send(gson.toJson(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()))));
         ws.send(gson.toJson(Map.of("type", "points", "data", "0")));
         if(lastCanvasState != null)
             ws.send(gson.toJson(Map.of("type", "canvas", "data", lastCanvasState)));
@@ -237,7 +252,7 @@ public class GameSession {
         playerIdx = 0;
         currentRound = 1;
         word = words.get(rand.nextInt(words.size()));
-        broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+        broadcast(gson.toJson(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()))));
         broadcastPoints();
         activateTimeService();
 
@@ -276,7 +291,7 @@ public class GameSession {
         lastCanvasState = null;
         guessedPlayers.clear();
         broadcast(gson.toJson(Map.of("type", "clear")));
-        broadcast(gson.toJson(Map.of("type", "start", "turn", currentTurn.getUsername())));
+        broadcast(gson.toJson(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()))));
         currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
 
         activateTimeService();

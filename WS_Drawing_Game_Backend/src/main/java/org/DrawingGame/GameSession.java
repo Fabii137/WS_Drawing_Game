@@ -190,6 +190,7 @@ public class GameSession {
             Player player = sortedPlayers.get(i);
             String display = String.format("%d → %s: %d", sortedPlayers.size() - i, player.getUsername(), player.getPoints());
             broadcast(gson.toJson(Map.of("type", "message", "data", display)));
+            player.resetPoints();
         }
         timeService.shutdown();
         startGame();
@@ -280,7 +281,7 @@ public class GameSession {
         timeService.shutdown();
 
         turnsInRound++;
-        if (turnsInRound >= players.size()) { // If all players have drawn
+        if (turnsInRound >= players.size()) {
             currentRound++;
             turnsInRound = 0;
         }

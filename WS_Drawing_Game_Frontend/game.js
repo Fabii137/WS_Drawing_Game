@@ -5,8 +5,8 @@ if(!username || username === "") {
 
 const canvas = document.querySelector('#canvas'); 
 const ctx = canvas.getContext('2d'); 
-// const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
-const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
+const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
+// const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 
 window.addEventListener('load', () => { 
 	resize();
@@ -29,6 +29,7 @@ document.getElementById("messageInput").addEventListener("keypress", function(ev
 });
 
 let myTurn = false;
+let currentTurn = null;
 let id = null;
 let word = null;
 let points = 0;
@@ -60,6 +61,8 @@ socket.onmessage = (event) => {
             break;
         case "start":
             reset();
+            resetScoreboard();
+            currentTurn = data.id;
             myTurn = data.id == id;
             if (myTurn) {
                 interval = setInterval(() => {
@@ -83,6 +86,22 @@ socket.onmessage = (event) => {
         case "id":
             id = data.data;
             break;
+        case "scoreboard":
+            const playerListElement = document.getElementById("player_list");
+            playerListElement.innerHTML = '';
+            const scoreboardPlayer = data.data;
+            scoreboardPlayer.forEach(playerData => {
+                addPlayerToScoreboard(playerData.id, playerData.username, playerData.points);
+            });
+            
+            markTurn(); 
+            break;
+        case "guessed_players":
+            const guessedPlayers = data.data;
+            guessedPlayers.forEach(playerData => {
+                markGuessed(playerData.id);
+            });
+            break;
         case "message":
             addMessage(data.data, data.username)
             break;
@@ -96,6 +115,7 @@ socket.onmessage = (event) => {
             break;
         case "correct":
             addMessage(data.username + ' guessed the word!');
+            markGuessed(data.id)
             break;
         case "clear":
             forceClear();
@@ -133,8 +153,9 @@ function reset() {
 }
 
 function resize(){ 
-    ctx.canvas.width = window.innerWidth / 2; 
-    ctx.canvas.height = window.innerHeight / 1.7; 
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
 
     if(socket.readyState == WebSocket.OPEN) {
         setTimeout(() => {
@@ -144,14 +165,15 @@ function resize(){
     
 } 
 
-function getPosition(event){ 
-    coord.x = event.clientX - canvas.offsetLeft; 
-    coord.y = event.clientY - canvas.offsetTop; 
+function getMousePos(event){ 
+    const rect = canvas.getBoundingClientRect();
+        coord.x = event.clientX - rect.left;
+        coord.y = event.clientY - rect.top;
 } 
 function startDrawing(event){ 
     if(myTurn) {
         painting = true; 
-        getPosition(event); 
+        getMousePos(event); 
     }
 } 
 function stopDrawing(){ 
@@ -206,7 +228,7 @@ function draw(event){
     ctx.lineCap = 'round';     
     ctx.strokeStyle = color; 
     ctx.moveTo(coord.x, coord.y); 
-    getPosition(event); 
+    getMousePos(event); 
     ctx.lineTo(coord.x , coord.y); 
     ctx.stroke(); 
 }
@@ -258,5 +280,61 @@ function addMessage(message, name) {
     
     chat.scrollTop = chat.scrollHeight;
 }
+
+function addPlayerToScoreboard(playerID, name, points) {
+    const playerListElement = document.getElementById("player_list");
+
+    let playerDiv = document.getElementById(playerID);
+    
+    playerDiv = document.createElement("div");
+    playerDiv.classList.add("player");
+    playerDiv.id = playerID;
+
+    let playerName = document.createElement("h5");
+    playerName.textContent = name;
+    let playerScore = document.createElement("span");
+    playerScore.textContent = "Score: " + points;
+
+    if(playerID == id) {
+        playerDiv.style.border = "2px solid black"
+    }
+
+    playerDiv.appendChild(playerName);
+    playerDiv.appendChild(playerScore);
+    playerListElement.appendChild(playerDiv);
+    
+}
+
+
+function resetScoreboard() {
+    const playerListElement = document.getElementById("player_list");
+    
+    const players = playerListElement.getElementsByClassName("player");
+    
+    for (let player of players) {
+        player.style.backgroundColor = "rgba(255, 255, 255, 0.3)"; 
+        player.style.border = ""; 
+    }
+}
+
+function markGuessed(playerID) {
+    const player = document.getElementById(playerID);
+    
+    if(!player)
+        return;
+
+    player.style.background = "green";
+
+}
+
+function markTurn() {
+    const player = document.getElementById(currentTurn);
+    
+    if(!player)
+        return;
+
+    player.style.backgroundColor = "orange"
+}
+
 
 

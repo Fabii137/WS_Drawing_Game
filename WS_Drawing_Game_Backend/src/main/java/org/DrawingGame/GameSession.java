@@ -20,6 +20,7 @@ public class GameSession {
     private final List<Player> players;
     private final List<Player> guessedPlayers;
     private final Map<Player, Integer> playerToPreparedPoints;
+    private int maxPlayerID = 0;
     private final List<String> words;
     private String word = null;
     private Player currentTurn;
@@ -49,11 +50,7 @@ public class GameSession {
     }
 
     public void addPlayer(Player player) {
-        int playerID = 0;
-        while(doesIDExist(playerID)) {
-            playerID++;
-        }
-        player.setId(playerID);
+        player.setId(maxPlayerID++);
         player.getWebSocket().send(gson.toJson(Map.of("type", "id", "data", Integer.toString(player.getId()))));
 
         players.add(player);
@@ -106,24 +103,6 @@ public class GameSession {
         return players.size();
     }
 
-    private boolean doesIDExist(int id) {
-        for(Player p : players) {
-            if (p.getId() == id)
-                return true;
-        }
-        return false;
-    }
-
-    public boolean doesNameExist(String username) {
-        for(Player p : players) {
-            if(p.getUsername().equals(username)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public void handleMessage(WebSocket ws, String message) {
         JsonObject jsonMessage = JsonParser.parseString(message).getAsJsonObject();
         if(!jsonMessage.has("type"))
@@ -150,7 +129,7 @@ public class GameSession {
                 String msg = jsonMessage.get("data").getAsString();
 
                 if(msg.equalsIgnoreCase(word) && author != currentTurn && !guessedPlayers.contains(author)) {
-                    broadcast(gson.toJson(Map.of("type", "correct", "username", author.getUsername())));
+                    broadcast(gson.toJson(Map.of("type", "correct", "id", author.getId() ,"username", author.getUsername())));
                     guessedPlayers.add(author);
 
                     int basePoints = 1000;
@@ -219,14 +198,33 @@ public class GameSession {
         WebSocket ws = player.getWebSocket();
         ws.send(gson.toJson(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()))));
         ws.send(gson.toJson(Map.of("type", "points", "data", "0")));
+
+        for(Player p : players) {
+            sendScoreboard(p);
+        }
+
+        List<Map<String, String>> guessedPlayersData = new ArrayList<>();
+        for (Player p : guessedPlayers) {
+            guessedPlayersData.add(Map.of("id", Integer.toString(p.getId()), "username", p.getUsername()));
+        }
+        ws.send(gson.toJson(Map.of("type", "guessed_players", "data", guessedPlayersData)));
+
         if(lastCanvasState != null)
             ws.send(gson.toJson(Map.of("type", "canvas", "data", lastCanvasState)));
 
     }
 
+    private void sendScoreboard(Player player) {
+        List<Map<String, String>> scoreboardData = new ArrayList<>();
+        for(Player p : players) {
+            scoreboardData.add(Map.of("id", Integer.toString(p.getId()), "username", p.getUsername(), "points", Integer.toString(p.getPoints())));
+        }
+        player.getWebSocket().send(gson.toJson(Map.of("type", "scoreboard", "data", scoreboardData)));
+    }
+
     private void readWordsFile() throws FileNotFoundException {
-//        File file = new File("/home/words.txt");
-        File file = new File("words.txt");
+        File file = new File("/home/words.txt");
+//        File file = new File("words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());
@@ -256,6 +254,11 @@ public class GameSession {
         broadcast(gson.toJson(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()))));
         broadcastPoints();
         activateTimeService();
+
+        for(Player p : players) {
+            sendScoreboard(p);
+        }
+
 
         isRunning = true;
         currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
@@ -294,6 +297,10 @@ public class GameSession {
         broadcast(gson.toJson(Map.of("type", "clear")));
         broadcast(gson.toJson(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()))));
         currentTurn.getWebSocket().send(gson.toJson(Map.of("type", "word", "data", word)));
+
+        for(Player p : players) {
+            sendScoreboard(p);
+        }
 
         activateTimeService();
     }

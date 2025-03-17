@@ -7,14 +7,19 @@
     <title>Drawing Game</title>
 </head>
 <body>
-    <h1 id="status"></h1>
-    <h2 id="word"></h2>
-    <div class="textContainer">
-        <h3 id="time"></h3>
-        <h3 id="points"></h3>
-    </div>
-    <div class="container">
-        <div class="canvas">
+    <div class="game-container">
+        <div class="players-container">
+            <h2>Players</h2>
+            <div id="player_list"></div>
+        </div>
+        
+        <div class="canvas-container">
+            <h1 id="status"></h1>
+            <h2 id="word"></h2>
+            <div class="textContainer">
+                <h3 id="time"></h3>
+                <h3 id="points"></h3>
+            </div>
             <canvas id="canvas"></canvas>
             <div class="options">
                 <button onclick="setColor('black')" style="background-color: black;"></button>
@@ -26,19 +31,18 @@
                 <button onclick="setColor('white')" style="background-color: white;"></button>
                 <button class="clear" onclick="clearCanvas()" style="background-color: white;">🗑️</button>
                 <button id="bg_fill_btn" class="fill_bg" onclick="setFillBackGround()" style="background-color: white;">fill bg</button>
-
             </div>
         </div>
         
         <div class="chat-container">
+            <h2>Chat</h2>
             <div class="chat" id="chat"></div>
             <div class="input-container">
                 <div class="error" id="error"></div>
                 <input type="text" id="messageInput" placeholder="Type a message...">
             </div>
         </div>
-    
+    </div>
 </body>
 <script src="game.js"></script>
 </html>
-

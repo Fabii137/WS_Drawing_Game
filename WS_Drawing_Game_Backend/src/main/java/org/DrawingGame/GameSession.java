@@ -76,17 +76,13 @@ public class GameSession {
         boolean wasCurrentTurn = playerToRemove == currentTurn;
         players.remove(playerToRemove);
 
-        if (wasCurrentTurn) {
+        if (wasCurrentTurn || players.size() < 2) {
             broadcast("clear");
             if (players.size() >= 2) {
                 nextTurn();
             } else {
                 stopGame();
             }
-        }
-
-        if (players.size() == 1) {
-            broadcast("wait");
         }
     }
 
@@ -177,7 +173,6 @@ public class GameSession {
     private void sendFullGameData(Player player) {
         WebSocket ws = player.getWebSocket();
         send(ws, Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId())));
-        send(ws, Map.of("type", "points", "data", "0"));
 
         for(Player p : players) {
             sendScoreboard(p);

@@ -14,23 +14,23 @@
         </div>
         
         <div class="canvas-container">
-            <h1 id="status"></h1>
-            <h2 id="word"></h2>
             <div class="textContainer">
+                <h1 id="status"></h1>
+                <h2 id="word"></h2>
                 <h3 id="time"></h3>
-                <h3 id="points"></h3>
             </div>
+            
             <canvas id="canvas"></canvas>
             <div class="options">
-                <button onclick="setColor('black')" style="background-color: black;"></button>
-                <button onclick="setColor('green')" style="background-color: green;"></button>
-                <button onclick="setColor('blue')" style="background-color: blue;"></button>
-                <button onclick="setColor('orange')" style="background-color: orange;"></button>
-                <button onclick="setColor('brown')" style="background-color: brown;"></button>
-                <button onclick="setColor('red')" style="background-color: red;"></button>
-                <button onclick="setColor('white')" style="background-color: white;"></button>
-                <button class="clear" onclick="clearCanvas()" style="background-color: white;">🗑️</button>
-                <button id="bg_fill_btn" class="fill_bg" onclick="setFillBackGround()" style="background-color: white;">fill bg</button>
+                <button onclick="setColor('rgba(0, 0, 0, 1)')" style="background-color: rgba(0, 0, 0, 1);"></button>
+                <button onclick="setColor('rgba(0, 255, 0, 1)')" style="background-color: rgba(0, 255, 0, 1);"></button>
+                <button onclick="setColor('rgba(0, 0, 255, 1)')" style="background-color: rgba(0, 0, 255, 1);"></button>
+                <button onclick="setColor('rgba(255, 165, 0, 1)')" style="background-color: rgba(255, 165, 0, 1);"></button>
+                <button onclick="setColor('rgba(139, 69, 19, 1)')" style="background-color: rgba(139, 69, 19, 1);"></button>
+                <button onclick="setColor('rgba(255, 0, 0, 1)')" style="background-color: rgba(255, 0, 0, 1);"></button>
+                <button onclick="setColor('rgba(255, 255, 255, 1)')" style="background-color: rgba(255, 255, 255, 1);"></button>
+                <button class="clear" onclick="clearCanvas()" style="background-color: white">🗑️</button>
+                <button id="fill_btn" class="fill_bg" onclick="setFill()" style="background-color: white">🪣</button>
             </div>
         </div>
         
@@ -39,7 +39,7 @@
             <div class="chat" id="chat"></div>
             <div class="input-container">
                 <div class="error" id="error"></div>
-                <input type="text" id="messageInput" placeholder="Type a message...">
+                <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
             </div>
         </div>
     </div>

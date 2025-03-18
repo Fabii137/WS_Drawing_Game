@@ -4,9 +4,9 @@ if(!username || username === "") {
 }
 
 const canvas = document.querySelector('#canvas'); 
-const ctx = canvas.getContext('2d'); 
-const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
-// const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+// const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
+const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 
 window.addEventListener('load', () => { 
 	resize();
@@ -36,8 +36,8 @@ let points = 0;
 let interval = null;
 let coord = {x:0 , y:0}; 
 let painting = false;
-let color = 'black'; 
-let fillBackground = false;
+let color = 'rgba(0, 0, 0, 1)'; 
+let fill = false;
 let timeLeft = null;
 
 
@@ -48,16 +48,15 @@ socket.onopen = () => {
 
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    console.log(data)
+    // console.log(data)
     const statusElement = document.getElementById("status");
-    const pointsElement = document.getElementById("points");
     const timeElement = document.getElementById("time");
     
     switch(data.type) {
         case "wait":
             reset();
             statusElement.innerText = 'Waiting for players';
-            statusElement.style.color = 'black';
+            statusElement.style.color = 'white';
             break;
         case "start":
             reset();
@@ -79,7 +78,7 @@ socket.onmessage = (event) => {
                 statusElement.style.color = 'red';
             } else {
                 statusElement.innerText = 'Current Turn \u2192  ' + data.name;
-                statusElement.style.color = 'black';
+                statusElement.style.color = 'white';
             }
             addMessage("round starts!");
             break;
@@ -105,10 +104,6 @@ socket.onmessage = (event) => {
         case "message":
             addMessage(data.data, data.username)
             break;
-        case "points":
-            points = data.data;
-            pointsElement.innerText = `Score: ${points}`;
-            break;
         case "time":
             timeLeft = data.data;
             timeElement.innerText = `${timeLeft} seconds left!`;
@@ -122,7 +117,7 @@ socket.onmessage = (event) => {
             break;
         case "word":
             word = data.data;
-            document.getElementById("word").innerText = `Your word is ${word}`;
+            document.getElementById("word").innerText = `Your word is: ${word}`;
             break;
         case "canvas":
             updateCanvas(data.data);
@@ -146,7 +141,7 @@ function updateCanvas(imgData) {
 }
 
 function reset() {
-    color = 'black';
+    color = 'rgba(0, 0, 0, 1)';
     word = null;
     document.getElementById("word").innerText = "";
     myTurn = false;
@@ -165,16 +160,31 @@ function resize(){
     
 } 
 
-function getMousePos(event){ 
+function getMousePos(event) {
     const rect = canvas.getBoundingClientRect();
-        coord.x = event.clientX - rect.left;
-        coord.y = event.clientY - rect.top;
+    let pos = { x: event.clientX - rect.left, 
+                y: event.clientY - rect.top };
+
+    return pos;
+}
+
+function setCoordPos(event){ 
+    const rect = canvas.getBoundingClientRect();
+    coord.x = event.clientX - rect.left;
+    coord.y = event.clientY - rect.top;
 } 
 function startDrawing(event){ 
-    if(myTurn) {
-        painting = true; 
-        getMousePos(event); 
+    if(!myTurn)
+        return;
+
+    if(fill) {
+        //TODO
+        setFill();
+        return;
     }
+
+    painting = true; 
+    setCoordPos(event); 
 } 
 function stopDrawing(){ 
     painting = false; 
@@ -185,22 +195,13 @@ function stopDrawing(){
 } 
 
 function setColor(setColor) {
-    const bgFillBtn = document.getElementById("bg_fill_btn");
-    if (fillBackground) {
-        ctx.fillStyle = setColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        fillBackground = false;
-        bgFillBtn.style.backgroundColor = "white";
-        sendCanvasData();
-    } else {
-        color = setColor;
-    }
+    color = setColor;
 }
-function setFillBackGround() {
+function setFill() {
     if(myTurn) {
-        const bgFillBtn = document.getElementById("bg_fill_btn");
-        fillBackground = !fillBackground;
-        bgFillBtn.style.backgroundColor = (fillBackground) ? "lightblue" : "white";
+        const fillBtn = document.getElementById("fill_btn");
+        fill = !fill;
+        fillBtn.style.backgroundColor = (fill) ? "lightblue" : "white";
 
         painting = false;
     }
@@ -228,7 +229,7 @@ function draw(event){
     ctx.lineCap = 'round';     
     ctx.strokeStyle = color; 
     ctx.moveTo(coord.x, coord.y); 
-    getMousePos(event); 
+    setCoordPos(event); 
     ctx.lineTo(coord.x , coord.y); 
     ctx.stroke(); 
 }
@@ -336,5 +337,10 @@ function markTurn() {
     player.style.backgroundColor = "orange"
 }
 
+
+
+function bucketFill(mousePos, targetColor, fillColor) {
+   //TODO
+}
 
 

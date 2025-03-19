@@ -39,6 +39,7 @@ let painting = false;
 let color = 'rgba(0, 0, 0, 1)'; 
 let fill = false;
 let timeLeft = null;
+let guessWord = null;
 
 
 
@@ -62,6 +63,7 @@ socket.onmessage = (event) => {
             reset();
             resetScoreboard();
             currentTurn = data.id;
+            statusElement.innerText = '';
             myTurn = data.id == id;
             if (myTurn) {
                 interval = setInterval(() => {
@@ -69,16 +71,16 @@ socket.onmessage = (event) => {
                         sendCanvasData();
                     }
                 }, 100);
+                // statusElement.innerText = 'Your Turn!';
+                // statusElement.style.color = 'red';
             } else {
                 clearInterval(interval);
                 painting = false;
-            }
-            if(myTurn) {
-                statusElement.innerText = 'Your Turn!';
-                statusElement.style.color = 'red';
-            } else {
-                statusElement.innerText = 'Current Turn \u2192  ' + data.name;
+                // statusElement.innerText = 'Current Turn \u2192  ' + data.name;
                 statusElement.style.color = 'white';
+
+                guessWord = "ˍ".repeat(data.length)
+                statusElement.innerText = guessWord.split("").join(" ");
             }
             addMessage("round starts!");
             break;
@@ -100,6 +102,12 @@ socket.onmessage = (event) => {
             guessedPlayers.forEach(playerData => {
                 markGuessed(playerData.id);
             });
+            break;
+        case "hint":
+            let guessArray = guessWord.split("");
+            guessArray[data.position] = data.letter;
+            guessWord = guessArray.join("");
+            statusElement.innerText = guessWord.split("").join(" ");
             break;
         case "message":
             addMessage(data.data, data.username)
@@ -145,6 +153,7 @@ function reset() {
     word = null;
     document.getElementById("word").innerText = "";
     myTurn = false;
+    guessWord = null;
 }
 
 function resize(){ 
@@ -179,6 +188,7 @@ function startDrawing(event){
 
     if(fill) {
         //TODO
+        //bucketFill();
         setFill();
         return;
     }
@@ -294,7 +304,7 @@ function addPlayerToScoreboard(playerID, name, points) {
     let playerName = document.createElement("h5");
     playerName.textContent = name;
     let playerScore = document.createElement("span");
-    playerScore.textContent = "Score: " + points;
+    playerScore.textContent = points;
 
     if(playerID == id) {
         playerDiv.style.border = "2px solid black"

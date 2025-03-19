@@ -217,9 +217,13 @@ body {
 }
 
 .options button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 40px;
     height: 40px;
     border-radius: 10px;
+    font-size: 1.3em;
     border: none;
     cursor: pointer;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s;

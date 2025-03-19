@@ -24,6 +24,7 @@ public class GameSession {
     private final List<Player> guessedPlayers = new ArrayList<>();
     private final Map<Player, Integer> playerToPreparedPoints = new HashMap<>();
     private final List<String> words = new ArrayList<>();
+    private final List<Integer> hintPositions = new ArrayList<>();
 
     private int maxPlayerID = 0;
     private String word;
@@ -90,6 +91,8 @@ public class GameSession {
         timeService.shutdown();
         isRunning = false;
         lastCanvasState = "";
+        hintPositions.clear();
+        guessedPlayers.clear();
         broadcast("clear");
         broadcast("wait");
     }
@@ -172,7 +175,9 @@ public class GameSession {
 
     private void sendFullGameData(Player player) {
         WebSocket ws = player.getWebSocket();
-        send(ws, Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId())));
+        send(ws, Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()), "length", Integer.toString(word.length())));
+
+
 
         for(Player p : players) {
             sendScoreboard(p);
@@ -226,7 +231,7 @@ public class GameSession {
         playerIdx = 0;
         currentRound = 1;
         word = words.get(rand.nextInt(words.size()));
-        broadcast(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId())));
+        broadcast(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()), "length", Integer.toString(word.length())));
         activateTimeService();
 
         for(Player p : players) {
@@ -267,8 +272,9 @@ public class GameSession {
         word = words.get(rand.nextInt(words.size()));
         lastCanvasState = null;
         guessedPlayers.clear();
+        hintPositions.clear();
         broadcast("clear");
-        broadcast(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId())));
+        broadcast(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()), "length", Integer.toString(word.length())));
         send(currentTurn.getWebSocket(), Map.of("type", "word", "data", word));
 
         for(Player p : players) {
@@ -281,11 +287,25 @@ public class GameSession {
     private void activateTimeService() {
         timeLeft = ROUND_DURATION;
         timeService = Executors.newScheduledThreadPool(1);
+
+        int firstHint = (int) (ROUND_DURATION * 0.75);
+        int secondHint = (int) (ROUND_DURATION * 0.50);
+        int finalHint = (int) (ROUND_DURATION * 0.25);
+
         Runnable timeRunnable = () -> {
             broadcast(Map.of("type", "time", "data", Integer.toString(timeLeft)));
-            timeLeft--;
-            if(timeLeft < 0)
+
+            if(hintPositions.size()-1 != word.length() && (timeLeft == firstHint || timeLeft == secondHint || timeLeft == finalHint)) {
+                int idx;
+                do {
+                    idx = rand.nextInt(0, word.length());
+                } while (hintPositions.contains(idx));
+                hintPositions.add(idx);
+                broadcastBut(currentTurn, Map.of("type" ,"hint", "position", Integer.toString(idx), "letter", Character.toString(word.charAt(idx))));
+            }
+            if(timeLeft == 0)
                 endTurn();
+            timeLeft--;
         };
         timeService.scheduleAtFixedRate(timeRunnable, 0, 1, TimeUnit.SECONDS);
     }

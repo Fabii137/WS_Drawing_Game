@@ -7,7 +7,7 @@ body {
     /* background-image: linear-gradient(to right, #009ffd, #2a2a72, #009ffd); */
     /* background-image: linear-gradient(to right, #ff7eb3, #ff758c, #ff7eb3); */
 
-
+    user-select: none;
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;

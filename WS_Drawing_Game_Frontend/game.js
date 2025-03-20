@@ -5,16 +5,30 @@ if(!username || username === "") {
 
 const canvas = document.querySelector('#canvas'); 
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
-const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
-// const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
+// const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
+const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
+let mouseDown = false;
 
 window.addEventListener('load', () => { 
 	resize();
-	document.addEventListener('mousedown', startDrawing); 
-	document.addEventListener('mouseup', stopDrawing); 
-	document.addEventListener('mousemove', draw); 
+    window.addEventListener('mousedown', () => mouseDown = true);
+    window.addEventListener('mouseup', () => mouseDown = false);
 	window.addEventListener('resize', resize); 
 }); 
+canvas.addEventListener("mouseenter", () => {
+    if (mouseDown && myTurn) {
+        isDrawing = true;
+        setCoordPos(this);
+    }
+});
+canvas.addEventListener("mouseleave", () => {
+    if(myTurn)
+        sendCanvasData();
+    isDrawing = false
+});
+canvas.addEventListener('mousedown', startDrawing); 
+canvas.addEventListener('mouseup', stopDrawing); 
+canvas.addEventListener('mousemove', draw); 
 
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
@@ -35,7 +49,7 @@ let word = null;
 let points = 0;
 let interval = null;
 let coord = {x:0 , y:0}; 
-let painting = false;
+let isDrawing = false;
 let color = 'rgba(0, 0, 0, 1)'; 
 let fill = false;
 let timeLeft = null;
@@ -46,6 +60,18 @@ let guessWord = null;
 socket.onopen = () => {
     console.log("Connected to server");
 }
+socket.onclose = (event) => {
+    const statusElement = document.getElementById("status");
+    const timeElement = document.getElementById("time");
+    const playerList = document.getElementById("player_list")
+
+    reset();
+    statusElement.innerText = 'Server connection closed!';
+    timeElement.innerText = "";
+    playerList.innerText = "";
+
+    forceClear();
+};
 
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
@@ -67,7 +93,7 @@ socket.onmessage = (event) => {
             myTurn = data.id == id;
             if (myTurn) {
                 interval = setInterval(() => {
-                    if (painting) {
+                    if (isDrawing) {
                         sendCanvasData();
                     }
                 }, 100);
@@ -75,7 +101,7 @@ socket.onmessage = (event) => {
                 // statusElement.style.color = 'red';
             } else {
                 clearInterval(interval);
-                painting = false;
+                isDrawing = false;
                 // statusElement.innerText = 'Current Turn \u2192  ' + data.name;
                 statusElement.style.color = 'white';
 
@@ -193,11 +219,11 @@ function startDrawing(event){
         return;
     }
 
-    painting = true; 
+    isDrawing = true; 
     setCoordPos(event); 
 } 
 function stopDrawing(){ 
-    painting = false; 
+    isDrawing = false; 
 
     if(myTurn) {
         sendCanvasData();
@@ -213,7 +239,7 @@ function setFill() {
         fill = !fill;
         fillBtn.style.backgroundColor = (fill) ? "lightblue" : "white";
 
-        painting = false;
+        isDrawing = false;
     }
     
 }
@@ -231,13 +257,14 @@ function clearCanvas() {
 }
 	
 function draw(event){
-    if (!painting) 
+    if (!isDrawing) 
         return; 
 
     ctx.beginPath(); 
     ctx.lineWidth = 5; 
     ctx.lineCap = 'round';     
     ctx.strokeStyle = color; 
+
     ctx.moveTo(coord.x, coord.y); 
     setCoordPos(event); 
     ctx.lineTo(coord.x , coord.y); 
@@ -256,6 +283,16 @@ function sendMessage() {
         setTimeout(() => {
             error.innerText = "";
         }, 3000)
+        return;
+    } else if(socket.readyState == WebSocket.CLOSED) {
+        let error = document.getElementById("error");
+        if(error.innerText == "") {
+            error.innerText = "Not connected to server!";
+
+            setTimeout(() => {
+                error.innerText = "";
+            }, 3000)
+        }
         return;
     }
 

@@ -63,10 +63,6 @@ public class GameSession {
         } else {
             broadcast("wait");
         }
-
-        if (lastCanvasState != null) {
-            send(ws, Map.of("type", "canvas", "data", lastCanvasState));
-        }
     }
 
     public void deletePlayer(WebSocket player) {
@@ -176,8 +172,6 @@ public class GameSession {
     private void sendFullGameData(Player player) {
         WebSocket ws = player.getWebSocket();
         send(ws, Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()), "length", Integer.toString(word.length())));
-
-
 
         for(Player p : players) {
             sendScoreboard(p);

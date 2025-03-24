@@ -1,6 +1,7 @@
 const username = sessionStorage.getItem("username");
 if(!username || username === "") {
     window.location.href = 'index.html'
+    throw new Error("Username is null or empty, redirecting...");
 }
 
 const canvas = document.querySelector('#canvas'); 
@@ -64,12 +65,12 @@ socket.onopen = () => {
 socket.onclose = (event) => {
     const statusElement = document.getElementById("status");
     const timeElement = document.getElementById("time");
-    const playerList = document.getElementById("player_list")
+    const scoreboardElement = document.getElementById("player_list")
 
     reset();
     statusElement.innerText = 'Server connection closed!';
     timeElement.innerText = "";
-    playerList.innerText = "";
+    scoreboardElement.innerText = "";
 
     forceClear();
 };
@@ -79,12 +80,16 @@ socket.onmessage = (event) => {
     // console.log(data)
     const statusElement = document.getElementById("status");
     const timeElement = document.getElementById("time");
+    const optionElement = document.getElementById("options");
+    const scoreboardElement = document.getElementById("player_list");
     
     switch(data.type) {
         case "wait":
             reset();
             statusElement.innerText = 'Waiting for players';
             statusElement.style.color = 'white';
+            timeElement.innerText = '';
+            scoreboardElement.innerText = '';
             break;
         case "start":
             reset();
@@ -93,18 +98,11 @@ socket.onmessage = (event) => {
             statusElement.innerText = '';
             myTurn = data.id == id;
             if (myTurn) {
-                // interval = setInterval(() => {
-                //     if (isDrawing) {
-                //         sendCanvasData();
-                //     }
-                // }, 100);
-                // statusElement.innerText = 'Your Turn!';
-                // statusElement.style.color = 'red';
+                optionElement.style.visibility = 'visible'
             } else {
                 clearInterval(interval);
                 isDrawing = false;
-                // statusElement.innerText = 'Current Turn \u2192  ' + data.name;
-                statusElement.style.color = 'white';
+                optionElement.style.visibility = 'hidden'
 
                 guessWord = "ˍ".repeat(data.length)
                 statusElement.innerText = guessWord.split("").join(" ");
@@ -156,7 +154,6 @@ socket.onmessage = (event) => {
             break;
         case "stroke":
             const { x1, y1, x2, y2, color, width } = data.data;
-            //console.log(data.data);
             const absX1 = x1 * canvas.width;
             const absY1 = y1 * canvas.height;
             const absX2 = x2 * canvas.width;
@@ -277,10 +274,11 @@ function draw(event) {
     let prevY = coord.y;
     setCoordPos(event);
     
-    ctx.beginPath();
     ctx.lineWidth = 5;
     ctx.lineCap = 'round';
     ctx.strokeStyle = color;
+
+    ctx.beginPath();
     ctx.moveTo(prevX, prevY);
     ctx.lineTo(coord.x, coord.y);
     ctx.stroke();

@@ -5,10 +5,10 @@ if(!username || username === "") {
 
 const canvas = document.querySelector('#canvas'); 
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
-// const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
-const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
+const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
+// const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 let mouseDown = false;
-
+let resizeTimeout;
 window.addEventListener('load', () => { 
 	resize();
     window.addEventListener('mousedown', () => mouseDown = true);
@@ -16,14 +16,15 @@ window.addEventListener('load', () => {
 	window.addEventListener('resize', resize); 
 }); 
 canvas.addEventListener("mouseenter", () => {
-    if (mouseDown && myTurn) {
-        isDrawing = true;
-        setCoordPos(this);
-    }
+    // if (mouseDown && myTurn) {
+    //     isDrawing = true;
+    //     setCoordPos(this);
+    // }
 });
 canvas.addEventListener("mouseleave", () => {
-    if(myTurn)
-        sendCanvasData();
+    const mousePos = getMousePos(this);
+    //if(myTurn)
+        //TODO: send stroke till end of canvas so players dont miss it.
     isDrawing = false
 });
 canvas.addEventListener('mousedown', startDrawing); 
@@ -92,11 +93,11 @@ socket.onmessage = (event) => {
             statusElement.innerText = '';
             myTurn = data.id == id;
             if (myTurn) {
-                interval = setInterval(() => {
-                    if (isDrawing) {
-                        sendCanvasData();
-                    }
-                }, 100);
+                // interval = setInterval(() => {
+                //     if (isDrawing) {
+                //         sendCanvasData();
+                //     }
+                // }, 100);
                 // statusElement.innerText = 'Your Turn!';
                 // statusElement.style.color = 'red';
             } else {
@@ -153,26 +154,27 @@ socket.onmessage = (event) => {
             word = data.data;
             document.getElementById("word").innerText = `Your word is: ${word}`;
             break;
-        case "canvas":
-            updateCanvas(data.data);
+        case "stroke":
+            const { x1, y1, x2, y2, color, width } = data.data;
+            //console.log(data.data);
+            const absX1 = x1 * canvas.width;
+            const absY1 = y1 * canvas.height;
+            const absX2 = x2 * canvas.width;
+            const absY2 = y2 * canvas.height;
+        
+            drawStroke(absX1, absY1, absX2, absY2, color, width);
             break;
     }
 };
 
-
-function sendCanvasData() {
-    const imgData = canvas.toDataURL("image/png"); 
-    socket.send(JSON.stringify({ type: "canvas", data: imgData }));
-}
-
-function updateCanvas(imgData) {
-    const img = new Image();
-    img.onload = function () {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    };
-    img.src = imgData;
-}
+// function updateCanvas(imgData) {
+//     const img = new Image();
+//     img.onload = function () {
+//         ctx.clearRect(0, 0, canvas.width, canvas.height);
+//         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+//     };
+//     img.src = imgData;
+// }
 
 function reset() {
     color = 'rgba(0, 0, 0, 1)';
@@ -187,11 +189,11 @@ function resize(){
     canvas.width = rect.width;
     canvas.height = rect.height;
 
-    if(socket.readyState == WebSocket.OPEN) {
-        setTimeout(() => {
-            socket.send(JSON.stringify({ type: "get_canvas" }));
-        }, 100);
-    }
+    clearTimeout(resizeTimeout);
+
+    resizeTimeout = setTimeout(() => {
+        socket.send(JSON.stringify({ type: "get_strokes" }));
+    }, 200);
     
 } 
 
@@ -224,10 +226,6 @@ function startDrawing(event){
 } 
 function stopDrawing(){ 
     isDrawing = false; 
-
-    if(myTurn) {
-        sendCanvasData();
-    }
 } 
 
 function setColor(setColor) {
@@ -252,23 +250,73 @@ function forceClear() {
 function clearCanvas() {
     if(myTurn) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        sendCanvasData();
+        // sendCanvasData();
+        socket.send(JSON.stringify({ type: "clear"}));
     }
 }
 	
-function draw(event){
-    if (!isDrawing) 
-        return; 
+// function draw(event){
+//     if (!isDrawing) 
+//         return; 
 
-    ctx.beginPath(); 
-    ctx.lineWidth = 5; 
-    ctx.lineCap = 'round';     
-    ctx.strokeStyle = color; 
+//     ctx.beginPath(); 
+//     ctx.lineWidth = 5; 
+//     ctx.lineCap = 'round';     
+//     ctx.strokeStyle = color; 
 
-    ctx.moveTo(coord.x, coord.y); 
-    setCoordPos(event); 
-    ctx.lineTo(coord.x , coord.y); 
-    ctx.stroke(); 
+//     ctx.moveTo(coord.x, coord.y); 
+//     setCoordPos(event); 
+//     ctx.lineTo(coord.x , coord.y); 
+//     ctx.stroke(); 
+// }
+
+function draw(event) {
+    if (!isDrawing) return;
+
+    let prevX = coord.x;
+    let prevY = coord.y;
+    setCoordPos(event);
+    
+    ctx.beginPath();
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = color;
+    ctx.moveTo(prevX, prevY);
+    ctx.lineTo(coord.x, coord.y);
+    ctx.stroke();
+
+    if (myTurn) {
+        sendStroke(prevX, prevY, coord.x, coord.y, color, 5);
+    }
+}
+function drawStroke(x1, y1, x2, y2, color, width) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+}
+
+function sendStroke(x1, y1, x2, y2, color, width) {
+    const normX1 = x1 / canvas.width;
+    const normY1 = y1 / canvas.height;
+    const normX2 = x2 / canvas.width;
+    const normY2 = y2 / canvas.height;
+
+    socket.send(JSON.stringify({
+        type: "stroke",
+        data: {
+            x1: normX1,
+            y1: normY1,
+            x2: normX2,
+            y2: normY2,
+            color: color,
+            width: width
+        },
+    }));
 }
 
 function sendMessage() {

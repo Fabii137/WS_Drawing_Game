@@ -25,12 +25,12 @@ public class GameSession {
     private final Map<Player, Integer> playerToPreparedPoints = new HashMap<>();
     private final List<String> words = new ArrayList<>();
     private final List<Integer> hintPositions = new ArrayList<>();
+    private final List<Map<String, Object>> strokes = new ArrayList<>();
 
     private int maxPlayerID = 0;
     private String word;
     private Player currentTurn;
     private int playerIdx = 0;
-    private String lastCanvasState;
     private boolean isRunning = false;
     private int timeLeft;
     private int currentRound = 1;
@@ -86,7 +86,7 @@ public class GameSession {
     private void stopGame() {
         timeService.shutdown();
         isRunning = false;
-        lastCanvasState = "";
+        strokes.clear();
         hintPositions.clear();
         guessedPlayers.clear();
         broadcast("clear");
@@ -105,22 +105,42 @@ public class GameSession {
         Player author = getPlayerFromWebSocket(ws);
 
         switch (type) {
-            case "canvas" -> updateCanvas(ws, jsonMessage);
-            case "get_canvas" -> sendCanvas(ws);
+            case "stroke" -> handleStroke(ws, jsonMessage);
+            case "clear" -> sendClear(ws);
+            case "get_strokes" -> sendStrokes(ws);
             case "message" -> handleChatMessage(author, jsonMessage);
         }
     }
 
-    private void updateCanvas(WebSocket ws, JsonObject jsonMessage) {
+    private void handleStroke(WebSocket ws, JsonObject jsonMessage) {
+        if(getPlayerFromWebSocket(ws) != currentTurn)
+            return;
+
+        JsonObject data = jsonMessage.getAsJsonObject("data");
+
+        Map<String, Object> stroke = new HashMap<>();
+        stroke.put("x1", data.get("x1").getAsDouble());
+        stroke.put("y1", data.get("y1").getAsDouble());
+        stroke.put("x2", data.get("x2").getAsDouble());
+        stroke.put("y2", data.get("y2").getAsDouble());
+        stroke.put("color", data.get("color").getAsString());
+        stroke.put("width", data.get("width").getAsInt());
+        strokes.add(stroke);
+
+        broadcastBut(currentTurn, Map.of("type", "stroke", "data", stroke));
+    }
+
+    private void sendClear(WebSocket ws) {
         if (getPlayerFromWebSocket(ws) == currentTurn) {
-            lastCanvasState = jsonMessage.get("data").getAsString();
-            broadcastBut(currentTurn, Map.of("type", "canvas", "data", lastCanvasState));
+            strokes.clear();
+            broadcastBut(currentTurn, Map.of("type", "clear"));
         }
     }
 
-    private void sendCanvas(WebSocket ws) {
-        if (lastCanvasState != null) {
-            send(ws, Map.of("type", "canvas", "data", lastCanvasState));
+    private void sendStrokes(WebSocket ws) {
+        send(ws, Map.of("type", "clear"));
+        for (Map<String, Object> stroke : strokes) {
+            send(ws, Map.of("type", "stroke", "data", stroke));
         }
     }
 
@@ -183,8 +203,9 @@ public class GameSession {
         }
         send(ws, Map.of("type", "guessed_players", "data", guessedPlayersData));
 
-        if(lastCanvasState != null)
-            send(ws, Map.of("type", "canvas", "data", lastCanvasState));
+        for (Map<String, Object> stroke : strokes) {
+            send(ws, Map.of("type", "stroke", "data", stroke));
+        }
 
     }
 
@@ -197,8 +218,8 @@ public class GameSession {
     }
 
     private void readWordsFile() throws FileNotFoundException {
-//        File file = new File("/home/words.txt");
-        File file = new File("words.txt");
+        File file = new File("/home/words.txt");
+//        File file = new File("words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());
@@ -264,7 +285,7 @@ public class GameSession {
         playerIdx = (playerIdx + 1) % players.size();
         currentTurn = players.get(playerIdx);
         word = words.get(rand.nextInt(words.size()));
-        lastCanvasState = null;
+        strokes.clear();
         guessedPlayers.clear();
         hintPositions.clear();
         broadcast("clear");
@@ -318,7 +339,7 @@ public class GameSession {
         }
     }
 
-    private void broadcastBut(Player player, Map<String, String> objMap) {
+    private void broadcastBut(Player player, Map<String, Object> objMap) {
         String message = gson.toJson(objMap);
         for(Player p : players) {
             if(p != player)

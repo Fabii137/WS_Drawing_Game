@@ -79,8 +79,15 @@ public class GameSession {
                 nextTurn();
             } else {
                 stopGame();
+                broadcast("wait");
+            }
+        } else {
+            for(Player p : players) {
+                sendScoreboard(p);
             }
         }
+
+
     }
 
     private void stopGame() {
@@ -90,7 +97,6 @@ public class GameSession {
         hintPositions.clear();
         guessedPlayers.clear();
         broadcast("clear");
-        broadcast("wait");
     }
 
     public int getGameSize() {
@@ -164,18 +170,14 @@ public class GameSession {
         playerToPreparedPoints.put(author, points);
 
         if (checkDone()) {
-            if (currentRound == ROUND_COUNT) {
-                isRunning = false;
-                endTurn();
-                resetGame();
-            } else {
-                endTurn();
-            }
+            endTurn();
         }
     }
 
 
     private void resetGame() {
+        stopGame();
+
         List<Player> sortedPlayers = new ArrayList<>(players);
         sortedPlayers.sort(Comparator.comparing(Player::getPoints));
 
@@ -185,13 +187,12 @@ public class GameSession {
             broadcast(Map.of("type", "message", "data", display));
             player.resetPoints();
         }
-        timeService.shutdown();
         startGame();
     }
 
     private void sendFullGameData(Player player) {
         WebSocket ws = player.getWebSocket();
-        send(ws, Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()), "length", Integer.toString(word.length())));
+        send(ws, Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()), "length", Integer.toString(word.length()), "round", currentRound, "maxRound", ROUND_COUNT));
 
         for(Player p : players) {
             sendScoreboard(p);
@@ -218,8 +219,8 @@ public class GameSession {
     }
 
     private void readWordsFile() throws FileNotFoundException {
-        File file = new File("/home/words.txt");
-//        File file = new File("words.txt");
+//        File file = new File("/home/words.txt");
+        File file = new File("words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());
@@ -245,14 +246,14 @@ public class GameSession {
         currentTurn = players.getFirst();
         playerIdx = 0;
         currentRound = 1;
+        turnsInRound = 0;
         word = words.get(rand.nextInt(words.size()));
-        broadcast(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()), "length", Integer.toString(word.length())));
+        broadcast(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()), "length", Integer.toString(word.length()), "round", currentRound, "maxRound", ROUND_COUNT));
         activateTimeService();
 
         for(Player p : players) {
             sendScoreboard(p);
         }
-
 
         isRunning = true;
         send(currentTurn.getWebSocket(), Map.of("type", "word", "data", word));
@@ -282,6 +283,11 @@ public class GameSession {
             turnsInRound = 0;
         }
 
+        if(currentRound > ROUND_COUNT) {
+            resetGame();
+            return;
+        }
+
         playerIdx = (playerIdx + 1) % players.size();
         currentTurn = players.get(playerIdx);
         word = words.get(rand.nextInt(words.size()));
@@ -289,7 +295,7 @@ public class GameSession {
         guessedPlayers.clear();
         hintPositions.clear();
         broadcast("clear");
-        broadcast(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()), "length", Integer.toString(word.length())));
+        broadcast(Map.of("type", "start", "name", currentTurn.getUsername(), "id", Integer.toString(currentTurn.getId()), "length", Integer.toString(word.length()), "round", currentRound, "maxRound", ROUND_COUNT));
         send(currentTurn.getWebSocket(), Map.of("type", "word", "data", word));
 
         for(Player p : players) {

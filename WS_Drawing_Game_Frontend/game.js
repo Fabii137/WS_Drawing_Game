@@ -6,8 +6,8 @@ if(!username || username === "") {
 
 const canvas = document.querySelector('#canvas'); 
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
-const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
-// const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
+// const socket = new WebSocket(`ws://147.93.126.146:3000?username=${username}`);
+const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 let mouseDown = false;
 let resizeTimeout;
 window.addEventListener('load', () => { 
@@ -82,6 +82,7 @@ socket.onmessage = (event) => {
     const timeElement = document.getElementById("time");
     const optionElement = document.getElementById("options");
     const scoreboardElement = document.getElementById("player_list");
+    const roundElement = document.getElementById("round");
     
     switch(data.type) {
         case "wait":
@@ -96,6 +97,7 @@ socket.onmessage = (event) => {
             resetScoreboard();
             currentTurn = data.id;
             statusElement.innerText = '';
+            roundElement.innerText = `Round ${data.round}/${data.maxRound}`;
             myTurn = data.id == id;
             if (myTurn) {
                 optionElement.style.visibility = 'visible'
@@ -178,6 +180,7 @@ function reset() {
     word = null;
     document.getElementById("word").innerText = "";
     myTurn = false;
+    document.getElementById("round").innerText = "";
     guessWord = null;
 }
 

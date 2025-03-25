@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GameServer extends WebSocketServer {
-    private final int MAX_SIZE = 10;
+    private final int MAX_SIZE = 8;
     private final int port;
     private final String host;
     private final List<GameSession> gameSessions = new ArrayList<>();

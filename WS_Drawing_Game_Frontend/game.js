@@ -102,7 +102,6 @@ socket.onmessage = (event) => {
             if (myTurn) {
                 optionElement.style.visibility = 'visible'
             } else {
-                clearInterval(interval);
                 isDrawing = false;
                 optionElement.style.visibility = 'hidden'
 
@@ -166,15 +165,6 @@ socket.onmessage = (event) => {
     }
 };
 
-// function updateCanvas(imgData) {
-//     const img = new Image();
-//     img.onload = function () {
-//         ctx.clearRect(0, 0, canvas.width, canvas.height);
-//         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-//     };
-//     img.src = imgData;
-// }
-
 function reset() {
     color = 'rgba(0, 0, 0, 1)';
     word = null;
@@ -214,12 +204,13 @@ function startDrawing(event){
     if(!myTurn)
         return;
 
-    if(fill) {
-        //TODO
-        //bucketFill();
-        setFill();
-        return;
-    }
+    // if(fill) {
+    //     const mousePos = getMousePos(event);
+    //     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    //     floodFill(imageData, mousePos.x, mousePos.y);
+    //     setFill();
+    //     return;
+    // }
 
     isDrawing = true; 
     setCoordPos(event); 
@@ -231,16 +222,16 @@ function stopDrawing(){
 function setColor(setColor) {
     color = setColor;
 }
-function setFill() {
-    if(myTurn) {
-        const fillBtn = document.getElementById("fill_btn");
-        fill = !fill;
-        fillBtn.style.backgroundColor = (fill) ? "lightblue" : "white";
+// function setFill() {
+//     if(myTurn) {
+//         const fillBtn = document.getElementById("fill_btn");
+//         fill = !fill;
+//         fillBtn.style.backgroundColor = (fill) ? "lightblue" : "white";
 
-        isDrawing = false;
-    }
+//         isDrawing = false;
+//     }
     
-}
+// }
 
 
 function forceClear() {
@@ -250,28 +241,13 @@ function forceClear() {
 function clearCanvas() {
     if(myTurn) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // sendCanvasData();
         socket.send(JSON.stringify({ type: "clear"}));
     }
 }
-	
-// function draw(event){
-//     if (!isDrawing) 
-//         return; 
-
-//     ctx.beginPath(); 
-//     ctx.lineWidth = 5; 
-//     ctx.lineCap = 'round';     
-//     ctx.strokeStyle = color; 
-
-//     ctx.moveTo(coord.x, coord.y); 
-//     setCoordPos(event); 
-//     ctx.lineTo(coord.x , coord.y); 
-//     ctx.stroke(); 
-// }
 
 function draw(event) {
-    if (!isDrawing) return;
+    if (!isDrawing) 
+        return;
 
     let prevX = coord.x;
     let prevY = coord.y;
@@ -416,27 +392,15 @@ function resetScoreboard() {
 
 function markGuessed(playerID) {
     const player = document.getElementById(playerID);
-    
     if(!player)
         return;
-
     player.style.background = "green";
 
 }
 
 function markTurn() {
     const player = document.getElementById(currentTurn);
-    
     if(!player)
         return;
-
     player.style.backgroundColor = "orange"
 }
-
-
-
-function bucketFill(mousePos, targetColor, fillColor) {
-   //TODO
-}
-
-

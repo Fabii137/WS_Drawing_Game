@@ -34,7 +34,6 @@ public class GameServer extends WebSocketServer {
         }
         String username = queryString.substring(idx+1);
 
-        //TODO: create lobby?
         GameSession availableSession = null;
         for(GameSession session : gameSessions) {
             if(session.getGameSize() < MAX_SIZE) {

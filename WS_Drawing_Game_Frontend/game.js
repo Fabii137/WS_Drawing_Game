@@ -22,12 +22,6 @@ canvas.addEventListener("mouseenter", () => {
     //     setCoordPos(this);
     // }
 });
-canvas.addEventListener("mouseleave", () => {
-    const mousePos = getMousePos(this);
-    //if(myTurn)
-        //TODO: send stroke till end of canvas so players dont miss it.
-    isDrawing = false
-});
 canvas.addEventListener('mousedown', startDrawing); 
 canvas.addEventListener('mouseup', stopDrawing); 
 canvas.addEventListener('mousemove', draw); 

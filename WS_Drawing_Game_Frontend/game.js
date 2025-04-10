@@ -227,7 +227,6 @@ function setColor(setColor) {
 //         const fillBtn = document.getElementById("fill_btn");
 //         fill = !fill;
 //         fillBtn.style.backgroundColor = (fill) ? "lightblue" : "white";
-
 //         isDrawing = false;
 //     }
     

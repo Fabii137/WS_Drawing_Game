@@ -51,8 +51,6 @@ let fill = false;
 let timeLeft = null;
 let guessWord = null;
 
-
-
 socket.onopen = () => {
     console.log("Connected to server");
 }
@@ -71,7 +69,6 @@ socket.onclose = (event) => {
 
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    // console.log(data)
     const statusElement = document.getElementById("status");
     const timeElement = document.getElementById("time");
     const optionElement = document.getElementById("options");
@@ -138,7 +135,7 @@ socket.onmessage = (event) => {
             break;
         case "correct":
             addMessage(data.username + ' guessed the word!');
-            markGuessed(data.id)
+            markGuessed(data.id);
             break;
         case "clear":
             forceClear();
@@ -178,14 +175,12 @@ function resize(){
     resizeTimeout = setTimeout(() => {
         socket.send(JSON.stringify({ type: "get_strokes" }));
     }, 200);
-    
 } 
 
 function getMousePos(event) {
     const rect = canvas.getBoundingClientRect();
     let pos = { x: event.clientX - rect.left, 
                 y: event.clientY - rect.top };
-
     return pos;
 }
 
@@ -194,6 +189,7 @@ function setCoordPos(event){
     coord.x = event.clientX - rect.left;
     coord.y = event.clientY - rect.top;
 } 
+
 function startDrawing(event){ 
     if(!myTurn)
         return;
@@ -208,7 +204,6 @@ function stopDrawing(){
 function setColor(setColor) {
     color = setColor;
 }
-
 
 function forceClear() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -242,6 +237,7 @@ function draw(event) {
         sendStroke(prevX, prevY, coord.x, coord.y, color, 5);
     }
 }
+
 function drawStroke(x1, y1, x2, y2, color, width) {
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
@@ -311,7 +307,6 @@ function addMessage(message, name) {
         sender.textContent = name;
     }
     
-
     messageDiv.appendChild(messageText);
     messageDiv.appendChild(sender);
     chat.appendChild(messageDiv);
@@ -340,13 +335,10 @@ function addPlayerToScoreboard(playerID, name, points) {
     playerDiv.appendChild(playerName);
     playerDiv.appendChild(playerScore);
     playerListElement.appendChild(playerDiv);
-    
 }
-
 
 function resetScoreboard() {
     const playerListElement = document.getElementById("player_list");
-    
     const players = playerListElement.getElementsByClassName("player");
     
     for (let player of players) {
@@ -360,7 +352,6 @@ function markGuessed(playerID) {
     if(!player)
         return;
     player.style.background = "green";
-
 }
 
 function markTurn() {

@@ -198,14 +198,6 @@ function startDrawing(event){
     if(!myTurn)
         return;
 
-    // if(fill) {
-    //     const mousePos = getMousePos(event);
-    //     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    //     floodFill(imageData, mousePos.x, mousePos.y);
-    //     setFill();
-    //     return;
-    // }
-
     isDrawing = true; 
     setCoordPos(event); 
 } 
@@ -216,15 +208,6 @@ function stopDrawing(){
 function setColor(setColor) {
     color = setColor;
 }
-// function setFill() {
-//     if(myTurn) {
-//         const fillBtn = document.getElementById("fill_btn");
-//         fill = !fill;
-//         fillBtn.style.backgroundColor = (fill) ? "lightblue" : "white";
-//         isDrawing = false;
-//     }
-    
-// }
 
 
 function forceClear() {
@@ -294,25 +277,14 @@ function sendMessage() {
     let text = input.value.trim();
     if (text === "") 
         return;
-    else if(text.length > 100) {
-        let error = document.getElementById("error");
-        error.innerText = "input cannot be longer than 100 characters!";
-
-        setTimeout(() => {
-            error.innerText = "";
-        }, 3000)
-        return;
-    } else if(socket.readyState == WebSocket.CLOSED) {
-        let error = document.getElementById("error");
-        if(error.innerText == "") {
-            error.innerText = "Not connected to server!";
-
-            setTimeout(() => {
-                error.innerText = "";
-            }, 3000)
-        }
+    else if(socket.readyState == WebSocket.CLOSED) {
+        showError("Not connected to server!");
         return;
     }
+    else if(text.length > 100) {
+        showError("input cannot be longer than 100 characters!");
+        return;
+    } 
 
     addMessage(text, "");
     input.value = "";
@@ -396,4 +368,12 @@ function markTurn() {
     if(!player)
         return;
     player.style.backgroundColor = "orange"
+}
+
+function showError(message) {
+    const error = document.getElementById("error");
+    error.innerText = message;
+    setTimeout(() => {
+        error.innerText = "";
+    }, 3000)
 }

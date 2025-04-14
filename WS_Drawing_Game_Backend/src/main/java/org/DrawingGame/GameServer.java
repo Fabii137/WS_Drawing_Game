@@ -31,6 +31,7 @@ public class GameServer extends WebSocketServer {
         int idx = queryString.lastIndexOf("=");
         if(idx == -1) {
             webSocket.close();
+            return;
         }
         String username = queryString.substring(idx+1);
 

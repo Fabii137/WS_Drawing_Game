@@ -172,9 +172,11 @@ function resize(){
 
     clearTimeout(resizeTimeout);
 
-    resizeTimeout = setTimeout(() => {
-        socket.send(JSON.stringify({ type: "get_strokes" }));
-    }, 200);
+    if(socket.readyState == WebSocket.OPEN) {
+        resizeTimeout = setTimeout(() => {
+            socket.send(JSON.stringify({ type: "get_strokes" }));
+        }, 200);
+    }
 } 
 
 function getMousePos(event) {
@@ -273,7 +275,7 @@ function sendMessage() {
     let text = input.value.trim();
     if (text === "") 
         return;
-    else if(socket.readyState == WebSocket.CLOSED) {
+    else if(socket.readyState != WebSocket.OPEN) {
         showError("Not connected to server!");
         return;
     }

@@ -77,6 +77,9 @@ body {
     max-width: 15vw;
     padding: 1em;
     color: white;
+    h2 {
+        margin-left: 20px;
+    }
 }
 #player_list {
     display: flex;
@@ -210,31 +213,65 @@ body {
 
 .options {
     display: flex;
-    visibility: hidden;
+    border-radius: 10px;
+    width: fit-content; 
+    visibility: hidden; 
+    gap: 1em;
+}
+
+.options .current-color {
+    height: 50px;
+    width: 50px;
+    background-color: black;
+}
+
+.options .row {
+    display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    gap: 0.2em;
     justify-content: center;
-    gap: 0.5em;
 }
 
 .options button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    font-size: 1.3em;
-    border: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    font-size: 1em;
+    border: 2px solid #ccc;
+    background-clip: padding-box;
     cursor: pointer;
     transition: transform 0.2s ease-in-out, box-shadow 0.2s;
 }
 
+.line-width button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    height: 30px;
+}
+
 .options button:hover {
-    transform: scale(1.1);
+    transform: scale(1.2);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+.options .clear {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    padding: 1em;
+    border-radius: 8px;
+    font-size: 1.2em;
+    background: #ffebeb;
+}
+
+.options .clear:hover {
+    background: #ffcccc;
+    transform: scale(1.05);
+}
 
 
 /* Responsive Design */

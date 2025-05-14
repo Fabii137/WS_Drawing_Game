@@ -16,12 +16,6 @@ window.addEventListener('load', () => {
     window.addEventListener('mouseup', () => mouseDown = false);
 	window.addEventListener('resize', resize); 
 }); 
-canvas.addEventListener("mouseenter", () => {
-    // if (mouseDown && myTurn) {
-    //     isDrawing = true;
-    //     setCoordPos(this);
-    // }
-});
 canvas.addEventListener('mousedown', startDrawing); 
 canvas.addEventListener('mouseup', stopDrawing); 
 canvas.addEventListener('mousemove', draw); 
@@ -46,7 +40,8 @@ let points = 0;
 let interval = null;
 let coord = {x:0 , y:0}; 
 let isDrawing = false;
-let color = 'rgba(0, 0, 0, 1)'; 
+let color = 'rgba(0, 0, 0, 1)';
+let lineWidth = 5; 
 let fill = false;
 let timeLeft = null;
 let guessWord = null;
@@ -205,6 +200,13 @@ function stopDrawing(){
 
 function setColor(setColor) {
     color = setColor;
+    const colorElement = document.getElementById("current-color");
+    if(colorElement)
+        colorElement.style.backgroundColor = color;
+}
+
+function setLineWidth(lineW) {
+    lineWidth = lineW;
 }
 
 function forceClear() {
@@ -221,12 +223,12 @@ function clearCanvas() {
 function draw(event) {
     if (!isDrawing) 
         return;
-
+    
     let prevX = coord.x;
     let prevY = coord.y;
     setCoordPos(event);
     
-    ctx.lineWidth = 5;
+    ctx.lineWidth = lineWidth;
     ctx.lineCap = 'round';
     ctx.strokeStyle = color;
 
@@ -288,7 +290,6 @@ function sendMessage() {
     input.value = "";
 
     socket.send(JSON.stringify({ type: "message", data: text, username: username }));
-    socket.send(JSON.stringify({ type: "get_canvas" }));
 }
 
 function addMessage(message, name) {

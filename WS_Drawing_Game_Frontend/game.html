@@ -23,13 +23,40 @@
             
             <canvas id="canvas"></canvas>
             <div class="options" id="options">
-                <button onclick="setColor('rgba(0, 0, 0, 1)')" style="background-color: rgba(0, 0, 0, 1);"></button>
-                <button onclick="setColor('rgba(0, 255, 0, 1)')" style="background-color: rgba(0, 255, 0, 1);"></button>
-                <button onclick="setColor('rgba(0, 0, 255, 1)')" style="background-color: rgba(0, 0, 255, 1);"></button>
-                <button onclick="setColor('rgba(255, 165, 0, 1)')" style="background-color: rgba(255, 165, 0, 1);"></button>
-                <button onclick="setColor('rgba(139, 69, 19, 1)')" style="background-color: rgba(139, 69, 19, 1);"></button>
-                <button onclick="setColor('rgba(255, 0, 0, 1)')" style="background-color: rgba(255, 0, 0, 1);"></button>
-                <button onclick="setColor('rgba(255, 255, 255, 1)')" style="background-color: rgba(255, 255, 255, 1);"></button>
+                <div class="current-color" id="current-color"></div>
+                <div class="colors">
+                    <div class="row">
+                        <button onclick="setColor('rgba(255, 255, 255, 1)')" style="background-color: rgba(255, 255, 255, 1);"></button>
+                        <button onclick="setColor('rgba(163, 171, 176, 1)')" style="background-color: rgba(163, 171, 176, 1);"></button>
+                        <button onclick="setColor('rgba(255, 0, 0, 1)')" style="background-color: rgba(255, 0, 0, 1);"></button>
+                        <button onclick="setColor('rgba(255, 255, 0, 1)')" style="background-color: rgba(255, 255, 0, 1);"></button>
+                        <button onclick="setColor('rgba(139, 69, 1, 1)')" style="background-color: rgba(139, 69, 1, 1);"></button>
+                        <button onclick="setColor('rgba(35, 255, 178, 1)')" style="background-color: rgba(35, 255, 178, 1);"></button>
+                        <button onclick="setColor('rgba(0, 255, 0, 1)')" style="background-color: rgba(0, 255, 0, 1);"></button>
+                        <button onclick="setColor('rgba(150, 239, 255, 1)')" style="background-color: rgba(150, 239, 255, 1);"></button>
+                        <button onclick="setColor('rgba(0, 0, 255, 1)')" style="background-color: rgba(0, 0, 255, 1);"></button>
+                        <button onclick="setColor('rgba(253, 53, 205, 1)')" style="background-color: rgba(253, 53, 205, 1);"></button>
+                        <button onclick="setColor('rgba(255, 0, 255, 1)')" style="background-color: rgba(255, 0, 255, 1);"></button>
+                    </div>
+                    <div class="row">
+                        <button onclick="setColor('rgba(0, 0, 0, 1)')" style="background-color: rgba(0, 0, 0, 1);"></button>
+                        <button onclick="setColor('rgba(88, 90, 92, 1)')" style="background-color: rgba(88, 90, 92, 1);"></button>
+                        <button onclick="setColor('rgba(119, 39, 39, 1)')" style="background-color: rgba(119, 39, 39, 1);"></button>
+                        <button onclick="setColor('rgba(255, 164, 0, 1)')" style="background-color: rgba(255, 164, 0, 1);"></button>
+                        <button onclick="setColor('rgba(84, 48, 12, 1)')" style="background-color: rgba(84, 48, 12, 1);"></button>
+                        <button onclick="setColor('rgba(40, 205, 45, 1)')" style="background-color: rgba(40, 205, 45, 1);"></button>
+                        <button onclick="setColor('rgba(3, 103, 3, 1)')" style="background-color: rgba(3, 103, 3, 1);"></button>
+                        <button onclick="setColor('rgba(145, 63, 249, 1)')" style="background-color: rgba(145, 63, 249, 1);"></button>
+                        <button onclick="setColor('rgba(23, 31, 156, 1)')" style="background-color: rgba(23, 31, 156, 1);"></button>
+                        <button onclick="setColor('rgba(173, 63, 147, 1)')" style="background-color: rgba(173, 63, 147, 1);"></button>
+                        <button onclick="setColor('rgba(148, 29, 182, 1)')" style="background-color: rgba(148, 29, 182, 1);"></button>
+                    </div>
+                </div>
+                <div class="line-width row">
+                    <button onclick="setLineWidth(5)">S</button>
+                    <button onclick="setLineWidth(10)">M</button>
+                    <button onclick="setLineWidth(20)">L</button>
+                </div>
                 <button class="clear" onclick="clearCanvas()" style="background-color: white;">🗑️</button>
             </div>
         </div>

@@ -46,6 +46,14 @@ let lineWidth = 5;                  // Current line width
 let timeLeft = null;                // Time left in the round
 let guessWord = null;               // Word being guessed by players, filled with underscores at start
 
+/* HTML ELEMENTS */
+const statusElement = document.getElementById("status");
+const timeElement = document.getElementById("time");
+const optionElement = document.getElementById("options");
+const scoreboardElement = document.getElementById("player_list");
+const roundElement = document.getElementById("round");
+const wordElement = document.getElementById("word");
+
 /* WEBSOCKET CONNECTION */
 
 // Establish a WebSocket connection to the server
@@ -59,10 +67,6 @@ socket.onopen = () => {
 
 // WebSocket connection closed
 socket.onclose = (event) => {
-    const statusElement = document.getElementById("status");
-    const timeElement = document.getElementById("time");
-    const scoreboardElement = document.getElementById("player_list");
-
     resetGameState();
     statusElement.innerText = 'Server connection closed!';
     timeElement.innerText = "";
@@ -74,11 +78,6 @@ socket.onclose = (event) => {
 // Handle incoming WebSocket messages
 socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    const statusElement = document.getElementById("status");
-    const timeElement = document.getElementById("time");
-    const optionElement = document.getElementById("options");
-    const scoreboardElement = document.getElementById("player_list");
-    const roundElement = document.getElementById("round");
     
     switch (data.type) {
         case "wait":
@@ -111,8 +110,7 @@ socket.onmessage = (event) => {
             id = data.data; // Set player ID
             break;
         case "scoreboard":
-            const playerListElement = document.getElementById("player_list");
-            playerListElement.innerHTML = '';
+            scoreboardElement.innerHTML = '';
             const scoreboardPlayer = data.data;
             scoreboardPlayer.forEach(playerData => {
                 addPlayerToScoreboard(playerData.id, playerData.username, playerData.points);
@@ -147,7 +145,7 @@ socket.onmessage = (event) => {
             break;
         case "word":
             word = data.data; // Set the word for the current turn
-            document.getElementById("word").innerText = `Your word is: ${word}`;
+            wordElement.innerText = `Your word is: ${word}`;
             break;
         case "stroke":
             const { x1, y1, x2, y2, color, width } = data.data;
@@ -167,16 +165,15 @@ socket.onmessage = (event) => {
 function resetGameState() {
     color = 'rgba(0, 0, 0, 1)';
     word = null;
-    document.getElementById("word").innerText = "";
+    wordElement.innerText = "";
     myTurn = false;
-    document.getElementById("round").innerText = "";
+    roundElement.innerText = "";
     guessWord = null;
 }
 
 // Reset the scoreboard styles
 function resetScoreboard() {
-    const playerListElement = document.getElementById("player_list");
-    const players = playerListElement.getElementsByClassName("player");
+    const players = scoreboardElement.getElementsByClassName("player");
     
     for (let player of players) {
         player.style.backgroundColor = "rgba(255, 255, 255, 0.3)"; 
@@ -371,8 +368,6 @@ function addMessage(message, name) {
 
 // Add a player to the scoreboard
 function addPlayerToScoreboard(playerID, name, points) {
-    const playerListElement = document.getElementById("player_list");
-
     let playerDiv = document.getElementById(playerID);
     
     playerDiv = document.createElement("div");
@@ -390,7 +385,7 @@ function addPlayerToScoreboard(playerID, name, points) {
 
     playerDiv.appendChild(playerName);
     playerDiv.appendChild(playerScore);
-    playerListElement.appendChild(playerDiv);
+    scoreboardElement.appendChild(playerDiv);
 }
 
 /* ERROR HANDLING */

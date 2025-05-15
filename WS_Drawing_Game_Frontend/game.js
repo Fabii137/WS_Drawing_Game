@@ -13,22 +13,19 @@ if (!username || username === "") {
 const canvas = document.querySelector('#canvas'); 
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-// Variables for mouse and drawing state
-let mouseDown = false;
+// Resize time out for requesting strokes
 let resizeTimeout;
 
 // Event listeners for window and canvas interactions
 window.addEventListener('load', () => { 
     resize(); // Adjust canvas size on load
-    window.addEventListener('mousedown', () => mouseDown = true);
-    window.addEventListener('mouseup', () => mouseDown = false);
     window.addEventListener('resize', resize); // Adjust canvas size on resize
 }); 
 canvas.addEventListener('mousedown', startDrawing); 
 canvas.addEventListener('mouseup', stopDrawing); 
 canvas.addEventListener('mousemove', draw); 
 
-// Event listener for sending chat messages on Enter key press
+// Event listener for sending chat messages on Enter
 document.getElementById("messageInput").addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
         sendMessage();
@@ -42,16 +39,17 @@ let currentTurn = null;             // ID of the current turn player
 let id = null;                      // Player's ID
 let word = null;                    // Word to be guessed or drawn
 let points = 0;                     // Player's points
-let coord = { x: 0, y: 0 };         // Current mouse coordinates
+let coord = { x: 0, y: 0 };         // Current mouse coordinates while drawing
 let isDrawing = false;              // Indicates if the player is drawing
 let color = 'rgba(0, 0, 0, 1)';   // Current drawing color
 let lineWidth = 5;                  // Current line width
 let timeLeft = null;                // Time left in the round
-let guessWord = null;               // Word being guessed by players
+let guessWord = null;               // Word being guessed by players, filled with underscores at start
 
 /* WEBSOCKET CONNECTION */
 
 // Establish a WebSocket connection to the server
+// const socket = new WebSocket(`ws://http://147.93.126.146:3000?username=${username}`);
 const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 
 // WebSocket connection opened
@@ -65,12 +63,12 @@ socket.onclose = (event) => {
     const timeElement = document.getElementById("time");
     const scoreboardElement = document.getElementById("player_list");
 
-    reset(); // Reset game state
+    resetGameState();
     statusElement.innerText = 'Server connection closed!';
     timeElement.innerText = "";
     scoreboardElement.innerText = "";
 
-    forceClear(); // Clear the canvas
+    forceClear();
 };
 
 // Handle incoming WebSocket messages
@@ -84,14 +82,14 @@ socket.onmessage = (event) => {
     
     switch (data.type) {
         case "wait":
-            reset();
+            resetGameState();
             statusElement.innerText = 'Waiting for players';
             statusElement.style.color = 'white';
             timeElement.innerText = '';
             scoreboardElement.innerText = '';
             break;
         case "start":
-            reset();
+            resetGameState();
             resetScoreboard();
             currentTurn = data.id;
             statusElement.innerText = '';
@@ -166,7 +164,7 @@ socket.onmessage = (event) => {
 /* GAME STATE MANAGEMENT */
 
 // Reset game state variables
-function reset() {
+function resetGameState() {
     color = 'rgba(0, 0, 0, 1)';
     word = null;
     document.getElementById("word").innerText = "";
@@ -217,12 +215,12 @@ function resize() {
     }
 }
 
-// Clear the canvas completely
+// Clear the canvas 
 function forceClear() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-// Clear the canvas and notify the server
+// Clear the canvas and send to the server
 function clearCanvas() {
     if (myTurn) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);

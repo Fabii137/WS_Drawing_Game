@@ -5,6 +5,8 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,12 +30,15 @@ public class GameServer extends WebSocketServer {
         System.out.println("Player connected: " + webSocket.getRemoteSocketAddress());
         String queryString = clientHandshake.getResourceDescriptor();
 
-        int idx = queryString.lastIndexOf("=");
-        if(idx == -1) {
+        Map<String, String> queryParams = parseQueryString(queryString);
+        String username = queryParams.get("username");
+
+        if(username == null || username.trim().isEmpty()) {
             webSocket.close();
             return;
         }
-        String username = queryString.substring(idx+1);
+
+        username = URLDecoder.decode(username, StandardCharsets.UTF_8); // converts ascii character from url to utf8
 
         GameSession availableSession = null;
         for(GameSession session : gameSessions) {
@@ -79,5 +84,27 @@ public class GameServer extends WebSocketServer {
     @Override
     public void onStart() {
         System.out.println("Server started on " + host + ":" + port);
+    }
+
+    /**
+     * parses all key-value pairs from the query string into a HashMap
+     * @param queryString query string to parse
+     * @return HashMap with all key-value pairs in the query string
+     */
+    private Map<String, String> parseQueryString(String queryString) {
+        Map<String, String> params = new HashMap<>();
+        int queryStartIdx = queryString.indexOf('?');
+        if(queryStartIdx == -1)
+            return params;
+
+        String[] pairs = queryString.substring(queryStartIdx+1).split("&");
+        for(String pair : pairs) {
+            String[] kv = pair.split("=", 2);
+            if(kv.length == 2) {
+                params.put(kv[0], kv[1]);
+            }
+        }
+
+        return params;
     }
 }

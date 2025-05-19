@@ -16,7 +16,6 @@ const ctx = canvas.getContext('2d', { willReadFrequently: true });
 // Resize time out for requesting strokes
 let resizeTimeout;
 
-// Event listeners for window and canvas interactions
 window.addEventListener('load', () => { 
     resize(); // Adjust canvas size on load
     window.addEventListener('resize', resize); // Adjust canvas size on resize
@@ -25,12 +24,13 @@ canvas.addEventListener('mousedown', startDrawing);
 canvas.addEventListener('mouseup', stopDrawing); 
 canvas.addEventListener('mousemove', draw); 
 
-// Event listener for sending chat messages on Enter
+// Sending chat messages on Enter
 document.getElementById("messageInput").addEventListener("keypress", function(event) {
     if (event.key === "Enter") {
         sendMessage();
     }
 });
+
 
 /* GAME STATE VARIABLES */
 
@@ -46,7 +46,9 @@ let lineWidth = 5;                  // Current line width
 let timeLeft = null;                // Time left in the round
 let guessWord = null;               // Word being guessed by players, filled with underscores at start
 
+
 /* HTML ELEMENTS */
+
 const statusElement = document.getElementById("status");
 const timeElement = document.getElementById("time");
 const optionElement = document.getElementById("options");
@@ -54,9 +56,10 @@ const scoreboardElement = document.getElementById("player_list");
 const roundElement = document.getElementById("round");
 const wordElement = document.getElementById("word");
 
+
 /* WEBSOCKET CONNECTION */
 
-// Establish a WebSocket connection to the server
+// Connect to the WebSocket server
 // const socket = new WebSocket(`ws://http://147.93.126.146:3000?username=${username}`);
 const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 
@@ -100,7 +103,7 @@ socket.onmessage = (event) => {
                 isDrawing = false;
                 optionElement.style.visibility = 'hidden'; // Hide drawing options
 
-                // Display the word as underscores for guessing
+                // Display the word for guessing
                 guessWord = "ˍ".repeat(data.length);
                 statusElement.innerText = guessWord.split("").join(" ");
             }
@@ -125,7 +128,7 @@ socket.onmessage = (event) => {
             break;
         case "hint":
             let guessArray = guessWord.split("");
-            guessArray[data.position] = data.letter; // Reveal a letter as a hint
+            guessArray[data.position] = data.letter; // Reveal hint
             guessWord = guessArray.join("");
             statusElement.innerText = guessWord.split("").join(" ");
             break;
@@ -181,14 +184,14 @@ function resetScoreboard() {
     }
 }
 
-// Mark a player as having guessed the word
+// Mark players who guessed correctly
 function markGuessed(playerID) {
     const player = document.getElementById(playerID);
     if (!player) return;
     player.style.background = "green";
 }
 
-// Highlight the player whose turn it is
+// Highlight the current turn player
 function markTurn() {
     const player = document.getElementById(currentTurn);
     if (!player) return;
@@ -240,7 +243,8 @@ function setCoordPos(event) {
 
 // Start drawing on the canvas
 function startDrawing(event) { 
-    if (!myTurn) return; // Only allow drawing if it's the player's turn
+    if (!myTurn) 
+        return;
 
     isDrawing = true; 
     setCoordPos(event); 
@@ -269,7 +273,7 @@ function draw(event) {
     ctx.stroke();
 
     if (myTurn) {
-        sendStroke(prevX, prevY, coord.x, coord.y, color, lineWidth); // Send stroke data to the server
+        sendStroke(prevX, prevY, coord.x, coord.y); // Send stroke data to the server
     }
 }
 
@@ -286,7 +290,7 @@ function drawStroke(x1, y1, x2, y2, color, width) {
 }
 
 // Send stroke data to the server
-function sendStroke(x1, y1, x2, y2, color, width) {
+function sendStroke(x1, y1, x2, y2) {
     const normX1 = x1 / canvas.width;
     const normY1 = y1 / canvas.height;
     const normX2 = x2 / canvas.width;
@@ -300,7 +304,7 @@ function sendStroke(x1, y1, x2, y2, color, width) {
             x2: normX2,
             y2: normY2,
             color: color,
-            width: width
+            width: lineWidth
         },
     }));
 }
@@ -309,7 +313,8 @@ function sendStroke(x1, y1, x2, y2, color, width) {
 function setColor(setColor) {
     color = setColor;
     const colorElement = document.getElementById("current-color");
-    if (colorElement) colorElement.style.backgroundColor = color;
+    if (colorElement) 
+        colorElement.style.backgroundColor = color;
 }
 
 // Set the line width for drawing
@@ -323,7 +328,8 @@ function setLineWidth(lineW) {
 function sendMessage() {
     let input = document.getElementById("messageInput");
     let text = input.value.trim();
-    if (text === "") return;
+    if (text === "") 
+        return;
     else if (socket.readyState != WebSocket.OPEN) {
         showError("Not connected to server!");
         return;

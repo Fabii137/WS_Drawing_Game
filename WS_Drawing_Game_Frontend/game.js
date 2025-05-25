@@ -60,8 +60,8 @@ const wordElement = document.getElementById("word");
 /* WEBSOCKET CONNECTION */
 
 // Connect to the WebSocket server
-// const socket = new WebSocket(`ws://http://147.93.126.146:3000?username=${username}`);
-const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
+const socket = new WebSocket(`ws://http://147.93.126.146:3000?username=${username}`);
+// const socket = new WebSocket(`ws://localhost:3000?username=${username}`);
 
 // WebSocket connection opened
 socket.onopen = () => {

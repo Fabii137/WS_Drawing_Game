@@ -1,48 +1,61 @@
 # 🎨 Drawing Game
 
-A real-time multiplayer drawing and guessing game implemented with **Java (backend)** and **HTML/CSS/JavaScript (frontend)** using WebSocket communication. Players take turns drawing a word while others try to guess it in the chat.
+A real-time multiplayer **drawing and guessing game** built with **Java (backend)** and **HTML/CSS/JavaScript (frontend)** using WebSocket communication. Players take turns drawing a word while others try to guess it in real-time.
+
+---
+
+## 📌 Features
+
+- Real-time collaborative drawing
+- Live guessing via chat
+- Turn-based word drawing
+- Hint system (reveals letters over time)
+- Round-based scoring and leaderboard tracking
 
 ---
 
 ## 📦 Tech Stack
 
-- **Backend:** Java using `org.java-websocket` for WebSocket support and `com.google.code.gson` for JSON parsing
-- **Frontend:** Vanilla HTML, CSS, and JavaScript
-- **Game Features:**
-  - Real-time drawing
-  - Word guessing game with hints
-  - Round-based score system
-  - Leaderboard tracking
+### 🖥 Backend
+
+- **Java**
+- WebSocket: [`org.java-websocket`](https://github.com/TooTallNate/Java-WebSocket)
+- JSON Parsing: [`com.google.code.gson`](https://github.com/google/gson)
+
+### 🌐 Frontend
+
+- **Vanilla HTML/CSS/JavaScript**
+- Canvas drawing
+- Real-time WebSocket communication
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Installation & Setup
 
-### 🖥 Backend Setup
+### ✅ Prerequisites
 
-1. **Dependencies Required:**
-   - `org.java-websocket`
-   - `com.google.code.gson`
+- Java 8 or higher  
+- Maven
 
-2. **Word List:**
-   - You can change the `words.txt` file to update the drawing words.
-   - Add one word per line.
+### Backend
 
-3. **Start Backend**
-   - Start the Main.java file
+- Clone the Repository
+  ```bash
+  git clone https://github.com/Fabii137/WS_Drawing_Game.git
+  cd WS_Drawing_Game/WS_Drawing_Game_Backend
+  ```
+- Build Project and install Dependencies
+  ```bash
+    mvn clean install
+  ```
 
-
-### 🌐 Frontend Setup
-
-  **The frontend handles**:
-   - Mouse events to draw on canvas
-   - Sending normalized stroke data to the server
-   - Receiving, rendering and sending strokes, messages
-   - Receiving and rendering game status
-
-   **Start**
-   - Open index.html
-
+- Start
+  ```bash
+    cd target
+    java -jar Drawing_Game-1.2.jar
+  ```
+### Frontend
+- Open index.html
 
 ## 🎮 How to Play
 
@@ -65,7 +78,7 @@ A real-time multiplayer drawing and guessing game implemented with **Java (backe
 
 
 ## 🔧 Customization
-
+- Modidy `word.txt` to update drawing words.
 - Modify `ROUND_DURATION`, `ROUND_COUNT`, and scoring constants in `GameSession.java` to adjust gameplay.
 
 ---

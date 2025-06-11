@@ -51,10 +51,11 @@ public class GameSession {
 
     /**
      * reads file and adds the words to an array
+     * @param filePath file path in the resource directory
      * @throws FileNotFoundException if file is not found
      */
-    private void readWordsFile(String fileName) throws FileNotFoundException {
-        InputStream input = getClass().getResourceAsStream(fileName);
+    private void readWordsFile(String filePath) throws FileNotFoundException {
+        InputStream input = getClass().getResourceAsStream(filePath);
         if(input == null) {
             throw new FileNotFoundException("words.txt not found!");
         }

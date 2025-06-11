@@ -53,7 +53,6 @@ public class GameSession {
      * @throws FileNotFoundException if file is not found
      */
     private void readWordsFile() throws FileNotFoundException {
-//        File file = new File("/home/words.txt");
         File file = new File("words.txt");
         Scanner scanner = new Scanner(file);
         while(scanner.hasNext()) {

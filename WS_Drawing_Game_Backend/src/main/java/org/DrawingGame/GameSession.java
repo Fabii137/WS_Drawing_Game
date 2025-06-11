@@ -7,6 +7,7 @@ import org.java_websocket.WebSocket;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,7 +42,7 @@ public class GameSession {
     public GameSession() {
         timeLeft = ROUND_DURATION;
         try {
-            readWordsFile();
+            readWordsFile("/words.txt");
         } catch (FileNotFoundException e) {
             System.out.println("File not found");
             System.exit(-1);
@@ -52,14 +53,16 @@ public class GameSession {
      * reads file and adds the words to an array
      * @throws FileNotFoundException if file is not found
      */
-    private void readWordsFile() throws FileNotFoundException {
-        File file = new File("words.txt");
-        Scanner scanner = new Scanner(file);
+    private void readWordsFile(String fileName) throws FileNotFoundException {
+        InputStream input = getClass().getResourceAsStream(fileName);
+        if(input == null) {
+            throw new FileNotFoundException("words.txt not found!");
+        }
+        Scanner scanner = new Scanner(input);
         while(scanner.hasNext()) {
             words.add(scanner.nextLine());
         }
     }
-
 
     /**
      * adds player to the game<br>

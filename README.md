@@ -28,7 +28,8 @@ A real-time multiplayer drawing and guessing game implemented with **Java (backe
    - You can change the `words.txt` file to update the drawing words.
    - Add one word per line.
 
-3. **Start Backend** 
+3. **Start Backend**
+   - Start the Main.java file
 
 
 ### 🌐 Frontend Setup

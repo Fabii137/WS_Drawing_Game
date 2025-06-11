@@ -78,7 +78,7 @@ A real-time multiplayer **drawing and guessing game** built with **Java (backend
 
 
 ## 🔧 Customization
-- Modidy `words.txt` to update drawing words.
+- Modify `words.txt` to update drawing words.
 - Modify `ROUND_DURATION`, `ROUND_COUNT`, and scoring constants in `GameSession.java` to adjust gameplay.
 
 ---

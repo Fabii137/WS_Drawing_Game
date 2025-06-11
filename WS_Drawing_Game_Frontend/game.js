@@ -34,12 +34,12 @@ document.getElementById("messageInput").addEventListener("keypress", function(ev
 
 /* GAME STATE VARIABLES */
 
-let myTurn = false;                 // Indicates if it's the player's turn
+let isMyTurn = false;               // Indicates if it's the player's turn
 let currentTurn = null;             // ID of the current turn player
 let id = null;                      // Player's ID
 let word = null;                    // Word to be guessed or drawn
 let points = 0;                     // Player's points
-let coord = { x: 0, y: 0 };         // Current mouse coordinates while drawing
+let mouseCoord = { x: 0, y: 0 };    // Current mouse coordinates while drawing
 let isDrawing = false;              // Indicates if the player is drawing
 let color = 'rgba(0, 0, 0, 1)';   // Current drawing color
 let lineWidth = 5;                  // Current line width
@@ -95,8 +95,8 @@ socket.onmessage = (event) => {
             currentTurn = data.id;
             statusElement.innerText = '';
             roundElement.innerText = `Round ${data.round}/${data.maxRound}`;
-            myTurn = data.id == id;
-            if (myTurn) {
+            isMyTurn = data.id == id;
+            if (isMyTurn) {
                 optionElement.style.visibility = 'visible'; // Show drawing options
             } else {
                 isDrawing = false;
@@ -168,7 +168,7 @@ function resetGameState() {
     color = 'rgba(0, 0, 0, 1)';
     word = null;
     wordElement.innerText = "";
-    myTurn = false;
+    isMyTurn = false;
     roundElement.innerText = "";
     guessWord = null;
 }
@@ -221,32 +221,26 @@ function forceClear() {
 
 // Clear the canvas and send to the server
 function clearCanvas() {
-    if (myTurn) {
+    if (isMyTurn) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         socket.send(JSON.stringify({ type: "clear" }));
     }
 }
 
-// Get mouse position relative to the canvas
-function getMousePos(event) {
-    const rect = canvas.getBoundingClientRect();
-    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-}
-
 // Set the current mouse coordinates
-function setCoordPos(event) { 
+function setMouseCoordPos(event) { 
     const rect = canvas.getBoundingClientRect();
-    coord.x = event.clientX - rect.left;
-    coord.y = event.clientY - rect.top;
+    mouseCoord.x = event.clientX - rect.left;
+    mouseCoord.y = event.clientY - rect.top;
 }
 
 // Start drawing on the canvas
 function startDrawing(event) { 
-    if (!myTurn) 
+    if (!isMyTurn) 
         return;
 
     isDrawing = true; 
-    setCoordPos(event); 
+    setMouseCoordPos(event); 
 }
 
 // Stop drawing on the canvas
@@ -258,9 +252,9 @@ function stopDrawing() {
 function draw(event) {
     if (!isDrawing) return;
     
-    let prevX = coord.x;
-    let prevY = coord.y;
-    setCoordPos(event);
+    let prevX = mouseCoord.x;
+    let prevY = mouseCoord.y;
+    setMouseCoordPos(event);
     
     ctx.lineWidth = lineWidth;
     ctx.lineCap = 'round';
@@ -268,11 +262,11 @@ function draw(event) {
 
     ctx.beginPath();
     ctx.moveTo(prevX, prevY);
-    ctx.lineTo(coord.x, coord.y);
+    ctx.lineTo(mouseCoord.x, mouseCoord.y);
     ctx.stroke();
 
-    if (myTurn) {
-        sendStroke(prevX, prevY, coord.x, coord.y); // Send stroke data to the server
+    if (isMyTurn) {
+        sendStroke(prevX, prevY, mouseCoord.x, mouseCoord.y); // Send stroke data to the server
     }
 }
 

@@ -6,7 +6,7 @@ A real-time multiplayer **drawing and guessing game** built with **Java (backend
 
 ## 📌 Features
 
-- Real-time collaborative drawing
+- Real-time drawing
 - Live guessing via chat
 - Turn-based word drawing
 - Hint system (reveals letters over time)

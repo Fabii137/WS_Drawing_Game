@@ -186,7 +186,8 @@ function resetScoreboard() {
 // Mark players who guessed correctly
 function markGuessed(playerID) {
     const player = document.getElementById(playerID);
-    if (!player) return;
+    if (!player) 
+        return;
     player.style.background = "green";
 }
 
@@ -250,7 +251,8 @@ function stopDrawing() {
 
 // Draw on the canvas while the mouse is moving
 function draw(event) {
-    if (!isDrawing) return;
+    if (!isDrawing || !isMyTurn) 
+        return;
     
     let prevX = mouseCoord.x;
     let prevY = mouseCoord.y;
@@ -265,9 +267,7 @@ function draw(event) {
     ctx.lineTo(mouseCoord.x, mouseCoord.y);
     ctx.stroke();
 
-    if (isMyTurn) {
-        sendStroke(prevX, prevY, mouseCoord.x, mouseCoord.y); // Send stroke data to the server
-    }
+    sendStroke(prevX, prevY, mouseCoord.x, mouseCoord.y); // Send stroke data to the server
 }
 
 // Draw a stroke on the canvas

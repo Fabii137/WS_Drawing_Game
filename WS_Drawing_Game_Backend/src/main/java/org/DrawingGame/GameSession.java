@@ -14,10 +14,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class GameSession {
-    private static final int ROUND_DURATION = 300;
+    private static final int ROUND_DURATION = 300; // seconds
     private static final int ROUND_COUNT = 5;
     private static final double DECAY_FACTOR = 0.7;
     private static final int BASE_POINTS = 1000;
+    private static final double FIRST_HINT = 0.75; // 75%
+    private static final double SECOND_HINT = 0.5; // 50%
+    private static final double THIRD_HINT = 0.25; // 25%
 
     private final Gson gson = new Gson();
     private final Random rand = new Random();
@@ -250,9 +253,9 @@ public class GameSession {
         timeLeft = ROUND_DURATION;
         timeService = Executors.newScheduledThreadPool(1);
 
-        int firstHint = (int) (ROUND_DURATION * 0.75);
-        int secondHint = (int) (ROUND_DURATION * 0.50);
-        int finalHint = (int) (ROUND_DURATION * 0.25);
+        int firstHint = (int) (ROUND_DURATION * FIRST_HINT);
+        int secondHint = (int) (ROUND_DURATION * SECOND_HINT);
+        int finalHint = (int) (ROUND_DURATION * THIRD_HINT);
 
         Runnable timeRunnable = () -> {
             broadcast(Map.of("type", "time", "data", Integer.toString(timeLeft)));

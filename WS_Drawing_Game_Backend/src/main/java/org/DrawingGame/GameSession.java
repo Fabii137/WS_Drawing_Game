@@ -260,7 +260,7 @@ public class GameSession {
         Runnable timeRunnable = () -> {
             broadcast(Map.of("type", "time", "data", Integer.toString(timeLeft)));
 
-            if(hintPositions.size()-1 != word.length() && (timeLeft == firstHint || timeLeft == secondHint || timeLeft == finalHint)) {
+            if(hintPositions.size() < word.length() && (timeLeft == firstHint || timeLeft == secondHint || timeLeft == finalHint)) {
                 int idx;
                 do {
                     idx = rand.nextInt(0, word.length());
@@ -303,7 +303,7 @@ public class GameSession {
      * @param jsonMessage Json Message containing the stroke
      */
     private void handleStroke(WebSocket ws, JsonObject jsonMessage) {
-        if(getPlayerFromWebSocket(ws) != currentTurn)
+        if(getPlayerFromWebSocket(ws) != currentTurn || !jsonMessage.has("data"))
             return;
 
         JsonObject data = jsonMessage.getAsJsonObject("data");
@@ -349,14 +349,14 @@ public class GameSession {
      * @param jsonMessage Message
      */
     private void handleChatMessage(Player author, JsonObject jsonMessage) {
-        if (jsonMessage.has("data")) {
-            String msg = jsonMessage.get("data").getAsString();
+        if (!jsonMessage.has("data"))
+            return;
+        String msg = jsonMessage.get("data").getAsString();
 
-            if (msg.equalsIgnoreCase(word) && author != currentTurn && !guessedPlayers.contains(author)) {
-                processCorrectGuess(author);
-            } else {
-                broadcastBut(author, Map.of("type", "message", "data", msg, "username", author.getUsername()));
-            }
+        if (msg.equalsIgnoreCase(word) && author != currentTurn && !guessedPlayers.contains(author)) {
+            processCorrectGuess(author);
+        } else {
+            broadcastBut(author, Map.of("type", "message", "data", msg, "username", author.getUsername()));
         }
     }
 

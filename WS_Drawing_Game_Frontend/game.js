@@ -11,7 +11,7 @@ if (!username || username === "") {
 
 // Select the canvas element and get its 2D rendering context
 const canvas = document.querySelector('#canvas'); 
-const ctx = canvas.getContext('2d', { willReadFrequently: true });
+const ctx = canvas.getContext('2d');
 
 // Resize time out for requesting strokes
 let resizeTimeout;
@@ -334,7 +334,7 @@ function sendMessage() {
     addMessage(text, ""); // Add the message to the chat
     input.value = "";
 
-    socket.send(JSON.stringify({ type: "message", data: text, username: username }));
+    socket.send(JSON.stringify({ type: "message", data: text}));
 }
 
 // Add a message to the chat

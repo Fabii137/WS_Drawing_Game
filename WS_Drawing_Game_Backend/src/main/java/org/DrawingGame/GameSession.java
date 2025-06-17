@@ -259,14 +259,17 @@ public class GameSession {
 
         Runnable timeRunnable = () -> {
             broadcast(Map.of("type", "time", "data", Integer.toString(timeLeft)));
-
-            if(hintPositions.size() < word.length() && (timeLeft == firstHint || timeLeft == secondHint || timeLeft == finalHint)) {
+            
+            boolean isHintTime = timeLeft == firstHint || timeLeft == secondHint || timeLeft == finalHint;
+            boolean canRevealHint = hintPositions.size() < word.length();
+            if(canRevealHint && isHintTime) {
                 int idx;
                 do {
                     idx = rand.nextInt(0, word.length());
                 } while (hintPositions.contains(idx));
                 hintPositions.add(idx);
-                broadcastBut(currentTurn, Map.of("type" ,"hint", "position", Integer.toString(idx), "letter", Character.toString(word.charAt(idx))));
+                broadcastBut(currentTurn, Map.of("type" ,"hint", "position", Integer.toString(idx),
+                        "letter", Character.toString(word.charAt(idx))));
             }
             if(timeLeft == 0)
                 endTurn();

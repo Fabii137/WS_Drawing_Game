@@ -3,7 +3,7 @@
 // Retrieve the username from session storage and redirect to login if not found
 const username = sessionStorage.getItem("username");
 if (!username || username === "") {
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
     throw new Error("Username is null or empty, redirecting...");
 }
 

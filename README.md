@@ -4,7 +4,7 @@ A real-time multiplayer **drawing and guessing game** built with **Java (backend
 
 ---
 
-## 📌 Features
+## Features
 
 - Real-time drawing
 - Live guessing via chat
@@ -16,13 +16,13 @@ A real-time multiplayer **drawing and guessing game** built with **Java (backend
 
 ## 📦 Tech Stack
 
-### 🖥 Backend
+### Backend
 
 - **Java**
 - WebSocket: [`org.java-websocket`](https://github.com/TooTallNate/Java-WebSocket)
 - JSON Parsing: [`com.google.code.gson`](https://github.com/google/gson)
 
-### 🌐 Frontend
+### Frontend
 
 - **Vanilla HTML/CSS/JavaScript**
 - Canvas drawing
@@ -32,7 +32,7 @@ A real-time multiplayer **drawing and guessing game** built with **Java (backend
 
 ## 🚀 Installation & Setup
 
-### ✅ Prerequisites
+### Prerequisites
 
 - Java 8 or higher  
 - Maven
@@ -67,7 +67,7 @@ A real-time multiplayer **drawing and guessing game** built with **Java (backend
 
 ---
 
-## 🧠 Game Logic Highlights
+## Game Logic Highlights
 
 - **Turn System:** Each player gets one turn per round.
 - **Scoring:**
